@@ -1,4 +1,4 @@
-# Mixture Density Network identifying binary lensing
+# Mixture Density Network identifying binary lensing events
 ## File structure
 
 I tried to write something clear but failed.
