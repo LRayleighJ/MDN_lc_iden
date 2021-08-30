@@ -1,7 +1,7 @@
 # Mixture Density Network identifying binary lensing events
 ## File structure
 
-I tried to write something clear but failed.
+I tried to write something clear but failed. About the main idea of this project, please read the pdf files in the folder `science`. 
 
 * `dataprocessing`: doing some dataset process
 * `network`: testing MDN
