@@ -138,8 +138,8 @@ def generate_random_parameter_set(u0_max=1, max_iter=100):
 global num_batch
 global num_bthlc
 
-num_batch = 100
-num_bthlc = 500
+num_batch = 2000
+num_bthlc = 50
 
 def gen_simu_data(index_batch):
     print("Batch",index_batch,"has started")
@@ -151,10 +151,15 @@ def gen_simu_data(index_batch):
         while True:
             try:
                 times,d_times = c_time.get_t_seq()
-                break
+                
+                t_E = (times[-1]-times[0])/4
+                if t_E < 0:
+                    continue
             except:
+                print(counter_total)
+                counter_total += 1
                 continue
-        while True:    
+
             if counter_total >= 100:
                 c_time = TimeData(datadir="/scratch/zerui603/noisedata/timeseq/",num_point=1000)
                 noi_model = NoiseData(datadir="/scratch/zerui603/noisedata/noisedata_hist/")
@@ -162,22 +167,17 @@ def gen_simu_data(index_batch):
                 print("Devil data appears")
                 continue
 
-            basis_m = 18+1.5*np.random.randn()
-            
-            while True:
-                t_E = (times[-1]-times[0])/4
-                if t_E > 0:
-                    break
-                else:
-                    continue
+            basis_m = 20+2*np.random.randn()
+
             t_0 = 0
             u_0, rho, q, s, alpha = generate_random_parameter_set()
 
+            '''
             if np.abs(np.log10(s))>0.1:
                 continue
             if np.abs(np.log10(q))<2:
                 continue
-
+            '''
             args_data = [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
 
             single = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E})
@@ -201,7 +201,9 @@ def gen_simu_data(index_batch):
                 noi_degeneracy, sig_degeneracy = noi_model.noisemodel(magnitude_tran(lc_degeneracy,m_0=basis_m))
                 lc_noi_degeneracy = magnitude_tran(lc_degeneracy,basis_m) + noi_degeneracy
             except:
+                counter_total += 1
                 continue
+        
 
             chi_s = chi_square(magnitude_tran(planet.magnification(times),basis_m),magnitude_tran(single.magnification(times),basis_m),sig)
             if chi_s > 100:
@@ -210,6 +212,7 @@ def gen_simu_data(index_batch):
                 print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
                 break
             else:
+                # print(counter_total)
                 counter_total += 1
                 continue
     del c_time
