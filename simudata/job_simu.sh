@@ -5,4 +5,4 @@
 #PBS -e /home/zerui603/MDN_lc/log/
 cd $PBS_O_WORKDIR
 
-python /home/zerui603/MDN_lc/simudata/makeuniformdata.py
+python /home/zerui603/MDN_lc/simudata/gen_simu.py
