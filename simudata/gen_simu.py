@@ -6,6 +6,7 @@ import datetime
 import random
 import multiprocessing as mp
 import gc
+import sys
 
 class TimeData(object):
     def __init__(self,datadir,num_point):
@@ -35,12 +36,16 @@ class TimeData(object):
         count = 0
         while True:
             index_timeseq = 0
+            count_gettimeseq = 0
             while True:
                 index_timeseq = random.randint(0,self.num_timeseq-1)
                 realtimeseq = self.time_data[index_timeseq]
                 if len(realtimeseq)>self.num_point:
                     realtimeseq = np.sort(realtimeseq)
                     break
+                else:
+                    print("Tadokoro rapes your code.",index_timeseq)
+                    continue
             index_cut = random.randint(self.num_point,len(realtimeseq)-1)
             time_cut = realtimeseq[index_cut-self.num_point:index_cut]-np.mean(realtimeseq[index_cut-self.num_point:index_cut])
 
@@ -50,6 +55,7 @@ class TimeData(object):
                 raise RuntimeError("Max step num has reached.")
             
             if self.badseq(d_times,35*np.mean(d_times)):
+                print("114!514!")
                 continue
             else:
                 return time_cut,d_times
@@ -58,6 +64,7 @@ class TimeData(object):
 
     def __del__(self):
         del self.time_data
+        gc.collect()
             
 class NoiseData(object):
     def __init__(self,datadir):
@@ -91,6 +98,7 @@ class NoiseData(object):
         del self.mag_range
         del self.state
         del self.err_state
+        gc.collect()
 
 
 def magnitude_tran(magni,m_0=20):
@@ -138,8 +146,8 @@ def generate_random_parameter_set(u0_max=1, max_iter=100):
 global num_batch
 global num_bthlc
 
-num_batch = 2000
-num_bthlc = 50
+num_batch = 1000
+num_bthlc = 5
 
 def gen_simu_data(index_batch):
     print("Batch",index_batch,"has started")
@@ -160,7 +168,7 @@ def gen_simu_data(index_batch):
                 counter_total += 1
                 continue
 
-            if counter_total >= 100:
+            if counter_total >= 10:
                 c_time = TimeData(datadir="/scratch/zerui603/noisedata/timeseq/",num_point=1000)
                 noi_model = NoiseData(datadir="/scratch/zerui603/noisedata/noisedata_hist/")
                 counter_total = 0
@@ -206,13 +214,13 @@ def gen_simu_data(index_batch):
         
 
             chi_s = chi_square(magnitude_tran(planet.magnification(times),basis_m),magnitude_tran(single.magnification(times),basis_m),sig)
-            if chi_s > 100:
+            if chi_s > 0:
                 data_array=np.array([args_data,list(times),list(d_times),list(lc_noi),list(sig),list(lc_noi_single),list(sig_single),list(lc_noi_degeneracy),list(sig_degeneracy),list(magnitude_tran(lc,basis_m)),list(magnitude_tran(lc_single,basis_m)),list(magnitude_tran(lc_degeneracy,basis_m))])
                 np.save('/scratch/zerui603/simudata_test/'+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
                 print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
                 break
             else:
-                # print(counter_total)
+                print(counter_total)
                 counter_total += 1
                 continue
     del c_time
@@ -220,7 +228,8 @@ def gen_simu_data(index_batch):
     gc.collect()
 
 if __name__=="__main__":
-    u = 0
+    num_echo = int(sys.argv[1])
+    u = num_echo*num_batch
     starttime = datetime.datetime.now()
     print("starttime:",starttime)
     print("cpu_count:",os.cpu_count())
