@@ -14,6 +14,7 @@ class TimeData(object):
         time_file_list = os.listdir(datadir)
         time_num_file = len(time_file_list)
         time_index_file = random.randint(0,time_num_file-1)
+        self.filename = time_file_list[time_index_file]
         self.time_data = list(np.load(datadir+time_file_list[time_index_file],allow_pickle=True))
         self.num_timeseq = len(self.time_data) 
         self.num_point = num_point
@@ -44,7 +45,10 @@ class TimeData(object):
                     realtimeseq = np.sort(realtimeseq)
                     break
                 else:
-                    print("Tadokoro rapes your code.",index_timeseq)
+                    print("Tadokoro rapes your code.",self.filename,len(realtimeseq))
+                    count_gettimeseq += 1
+                    if count_gettimeseq > 20:
+                        raise RuntimeError("Very bad data, code destoryed")
                     continue
             index_cut = random.randint(self.num_point,len(realtimeseq)-1)
             time_cut = realtimeseq[index_cut-self.num_point:index_cut]-np.mean(realtimeseq[index_cut-self.num_point:index_cut])
@@ -55,7 +59,7 @@ class TimeData(object):
                 raise RuntimeError("Max step num has reached.")
             
             if self.badseq(d_times,35*np.mean(d_times)):
-                print("114!514!")
+                print("114!514!",count)
                 continue
             else:
                 return time_cut,d_times
