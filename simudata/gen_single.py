@@ -138,8 +138,8 @@ def generate_random_parameter_set(u0_max=1, max_iter=100):
 global num_batch
 global num_bthlc
 
-num_batch = 1000
-num_bthlc = 500
+num_batch = 20000
+num_bthlc = 50
 
 def gen_simu_data(index_batch):
     print("Batch",index_batch,"has started")
@@ -173,10 +173,7 @@ def gen_simu_data(index_batch):
             t_0 = 0
             u_0, rho, q, s, alpha = generate_random_parameter_set()
 
-            if np.abs(np.log10(s))>0.1:
-                continue
-            if np.abs(np.log10(q))<2:
-                continue
+            
 
             args_data = [u_0, rho, q, s, alpha, t_E]
 
@@ -203,7 +200,7 @@ def gen_simu_data(index_batch):
             args_data.append(0)
             
             data_array=np.array([args_data,list(times),list(d_times),list(lc_noi_single),list(sig_single)])
-            np.save('/scratch/zerui603/KMTsimudata/single_training/'+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
+            np.save('/scratch/zerui603/KMTsimudata/single_training/'+"1batch"+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
             print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
             break
             
