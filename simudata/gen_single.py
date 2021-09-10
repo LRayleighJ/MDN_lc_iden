@@ -200,7 +200,7 @@ def gen_simu_data(index_batch):
             args_data.append(0)
             
             data_array=np.array([args_data,list(times),list(d_times),list(lc_noi_single),list(sig_single)])
-            np.save('/scratch/zerui603/KMTsimudata/single_training/'+"1batch"+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
+            np.save('/scratch/zerui603/KMTsimudata/single_training/'+"3batch"+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
             print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
             break
             
@@ -218,3 +218,4 @@ if __name__=="__main__":
     endtime = datetime.datetime.now()
     print("end time:",endtime)
     print("total:",endtime - starttime)
+    # 153822

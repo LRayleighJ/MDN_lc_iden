@@ -14,11 +14,11 @@ from prefetch_generator import BackgroundGenerator
 import pickle
 import gc 
 
-import netmodule.netMDN_ResNet2D_iden as lcnet
+import netmodule.netGRUiden as lcnet
 
 # reload
-reload = 0
-preload_Netmodel = "resnet_params2D4args_iden.pkl"
+reload = 1
+preload_Netmodel = "GRUresnet_iden.pkl"
 
 
 # initialize GPU
@@ -30,38 +30,35 @@ N_gpu = 4
 print(N_gpu)
 print(os.cpu_count())
 device_ids = list(range(N_gpu))
-
-
-# torch.cuda.set_device(device_ids)
 torch.backends.cudnn.benchmark = True
 
 # define parameters
 ## number of points
 
 ## size of trainingset library
-size_train = 600000
+size_train = 1000000
 ## size of validationset library
-size_val = 20000
+size_val = 10000
 
 ## batch size and epoch
-batch_size_train = 6000
-batch_size_val = 2000
-n_epochs = 300
-learning_rate = 5e-6
-stepsize = 40
-gamma_0 = 0.75
-momentum = 0.3
+batch_size_train = 10000
+batch_size_val =2000
+n_epochs = 200
+learning_rate = 3e-5
+stepsize = 15
+gamma_0 = 0.9
+momentum = 0.5
 
 ## path of trainingset and validationset
-rootdir = "/scratch/zerui603/KMTsimudata_iden/2Ddata/training/"
-rootval = "/scratch/zerui603/KMTsimudata_iden/2Ddata/training/"
+rootdir = "/scratch/zerui603/KMTsimudata/training/"
+rootval = "/scratch/zerui603/KMTsimudata/val2/"
 
 
 # Loading datas
-trainingsdata = lcnet.Mydataset(n_lc=size_train,data_root=rootdir,prenum=0)
+trainingsdata = lcnet.Mydataset(n_lc=size_train,data_root=rootdir,judge_train=0)
 trainset = lcnet.DataLoaderX(trainingsdata, batch_size=batch_size_train,shuffle=True,num_workers=20,pin_memory=True)
 
-valdata = lcnet.Mydataset(n_lc=size_val,data_root=rootval,prenum=size_train)
+valdata = lcnet.Mydataset(n_lc=size_val,data_root=rootval,judge_train=0)
 valset = lcnet.DataLoaderX(valdata, batch_size=batch_size_val,num_workers=20,pin_memory=True,shuffle=True)
 
 # initialize model
