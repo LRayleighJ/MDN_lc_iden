@@ -93,6 +93,9 @@ def mixval(index):
         command = "cp"+" "+sindir+filename_list_sin[int(-1*(index-bin_num_val+1))]+" "+targetdir_mix_val+str(int(index))+".npy"
     os.system(command)
 
+examine_label_dir = ""
+def examine_label(index):
+    examine_label_dir
 
 if __name__=="__main__":
     starttime = datetime.datetime.now()

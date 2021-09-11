@@ -163,11 +163,11 @@ class ResNet(nn.Module):
         x = x.view(-1,25*512)
         # print(x.shape)
         x = self.fc1(x)
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc2(x)
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc3(x)
-        # x = F.dropout(x, p=0.25, training=self.training)
+        x = F.dropout(x, p=0.25, training=self.training)
         x = self.fc4(x)
 
         

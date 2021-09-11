@@ -93,7 +93,7 @@ def default_loader(data_root,posi_lc,judge_train=0):
 
     lc_data = np.array([data_input])
 
-    return lc_data, label*5
+    return lc_data, label
 
 
 class Mydataset(Dataset):
@@ -165,7 +165,7 @@ class ResNet(nn.Module):
         self.fc1 = nn.Linear(32*512, 2*864)
         self.fc2 = nn.Linear(2*864,2*512)
         self.fc3 = nn.Linear(2*512,2*256)
-        self.fc4 = nn.Linear(2*256,144)
+        self.fc4 = nn.Linear(2*256,2)
 
         self.outfunc = nn.Softmax(dim=-1)
     
@@ -202,7 +202,7 @@ class ResNet(nn.Module):
         # print(x.shape)
         x = self.fc1(x)
         # x = F.dropout(x, p=0.5, training=self.training)
-        x1 = self.fc2(x)
+        x = self.fc2(x)
         # x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc3(x)
         # x = F.dropout(x, p=0.25, training=self.training)

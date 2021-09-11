@@ -44,11 +44,11 @@ size_train = 600000
 size_val = 20000
 
 ## batch size and epoch
-batch_size_train = 6000
+batch_size_train = 3000
 batch_size_val = 2000
-n_epochs = 300
-learning_rate = 5e-6
-stepsize = 40
+n_epochs = 25
+learning_rate = 5e-5
+stepsize = 10
 gamma_0 = 0.75
 momentum = 0.3
 
@@ -83,6 +83,7 @@ scheduler = optim.lr_scheduler.StepLR(optimizer,step_size=stepsize,gamma=gamma_0
 loss_figure = []
 val_loss_figure = []
 val_correct_list = []
+cor_matrix = [[],[],[],[]]
 
 for epoch in range(n_epochs):
     running_loss = 0.0
@@ -91,13 +92,13 @@ for epoch in range(n_epochs):
     network.train()
     print("start training",datetime.datetime.now())
     for (i,data) in enumerate(trainset):
-        print("start loading data",datetime.datetime.now())
+        # print("start loading data",datetime.datetime.now())
         inputs, labels = data
         inputs = inputs.float()
         if use_gpu:
             inputs = inputs.cuda()
             labels = labels.cuda()
-        print("finish loading data",datetime.datetime.now())
+        # print("finish loading data",datetime.datetime.now())
         optimizer.zero_grad()
         outputs = network(inputs)
         outputs = outputs.double()
@@ -109,10 +110,11 @@ for epoch in range(n_epochs):
     
         loss.backward()
         optimizer.step()
-        print("finish calculating",datetime.datetime.now())
+        # print("finish calculating",datetime.datetime.now())
         epoch_rs = epoch_rs + loss.detach().item()
+        if sam%10 == 0:
+            print("Epoch:[", epoch + 1, sam, "] loss:", loss.item(),str(datetime.datetime.now()))
         sam = sam+1
-        print("Epoch:[", epoch + 1, sam, "] loss:", loss.item(),str(datetime.datetime.now()))
        
     scheduler.step()
     loss_figure.append(epoch_rs/sam)
@@ -171,9 +173,13 @@ for epoch in range(n_epochs):
     print("val_Epoch:[", epoch + 1, "] val_loss:", val_epoch_rs/val_sam,str(datetime.datetime.now()))
     print("Correct valset: ",val_correct,"/",size_val)
     print("TT,TF,FT,FF",val_cor_00,val_cor_01,val_cor_10,val_cor_11)
+    cor_matrix[0].append(val_cor_00)
+    cor_matrix[1].append(val_cor_01)
+    cor_matrix[2].append(val_cor_10)
+    cor_matrix[3].append(val_cor_11)
 
-    plt.figure()
-    plt.subplot(211)
+    plt.figure(figsize=(18,18))
+    plt.subplot(311)
     x = np.linspace(1,epoch+1,len(loss_figure))
     plt.plot(x, loss_figure,label = "training loss log-likehood")
     plt.plot(x, val_loss_figure,label = "val loss log-likehood")
@@ -182,12 +188,22 @@ for epoch in range(n_epochs):
     plt.ylabel("loss BCELoss")
     plt.legend()
 
-    plt.subplot(212)
+    plt.subplot(312)
     plt.plot(x, val_correct_list,label="accuracy")
     plt.title("Accuracy")
     plt.xlabel("epoch")
     plt.ylabel("Accuracy")
-    plt.savefig("loss_accuracy.png")
+
+    plt.subplot(313)
+    plt.plot(x, cor_matrix[0],label="output:binary,label:binary")
+    plt.plot(x, cor_matrix[1],label="output:single,label:binary")
+    plt.plot(x, cor_matrix[2],label="output:binary,label:single")
+    plt.plot(x, cor_matrix[3],label="output:single,label:single")
+    plt.xlabel("epoch")
+    plt.ylabel("Number")
+    plt.legend()
+    
+    plt.savefig("loss_accuracy_Resnet2D.png")
     plt.close()
 
     
