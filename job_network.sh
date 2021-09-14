@@ -20,6 +20,6 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 conda activate PyTorch-1.9.0
-python /home/zerui603/MDN_lc/network/mainMDN_ResNet2D_iden.py
+
 python /home/zerui603/MDN_lc/iden_1D/mainnet_1Diden.py
 conda deactivate

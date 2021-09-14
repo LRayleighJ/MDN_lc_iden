@@ -17,7 +17,7 @@ import gc
 import netmodule.netGRUiden as lcnet
 
 # reload
-reload = 0
+reload = 1
 preload_Netmodel = "GRUresnet_iden.pkl"
 
 
@@ -44,7 +44,7 @@ size_val = 60000
 batch_size_train = 10000
 batch_size_val =2000
 n_epochs = 200
-learning_rate = 7.5e-5
+learning_rate = 5e-6
 stepsize = 15
 gamma_0 = 0.9
 momentum = 0.5
@@ -72,9 +72,9 @@ if reload == 1:
     network.load_state_dict(torch.load(preload_Netmodel))
 
 optimizer = optim.Adam(network.parameters(), lr=learning_rate)
-scheduler = optim.lr_scheduler.StepLR(optimizer,step_size=stepsize,gamma=gamma_0)
-# optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=1, verbose=True, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
-
+# scheduler = optim.lr_scheduler.StepLR(optimizer,step_size=stepsize,gamma=gamma_0)
+# scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=4, verbose=True, threshold=0.05, threshold_mode='rel', cooldown=1, min_lr=0, eps=1e-7)
+scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer,T_0=5,T_mult=1)
 # Training
 
 loss_figure = []
@@ -115,9 +115,10 @@ for epoch in range(n_epochs):
             print("Epoch:[", epoch + 1, sam, "] loss:", loss.item(),str(datetime.datetime.now()))
         sam = sam+1
        
-    scheduler.step()
+    
     loss_figure.append(epoch_rs/sam)
     print("Training_Epoch:[", epoch + 1, "] Training_loss:", epoch_rs/sam,str(datetime.datetime.now()))
+    print("learning rate: ",optimizer.state_dict()['param_groups'][0]['lr'])
 
     if (epoch+1)%10 == 0:
         torch.save(network.state_dict(),preload_Netmodel)
@@ -172,6 +173,10 @@ for epoch in range(n_epochs):
 
     val_loss_figure.append(val_epoch_rs/val_sam)
     val_correct_list.append(val_correct/size_val)
+
+    scheduler.step(metrics=val_epoch_rs/val_sam)
+
+
     print("val_Epoch:[", epoch + 1, "] val_loss:", val_epoch_rs/val_sam,str(datetime.datetime.now()))
     print("Correct valset: ",val_correct,"/",size_val)
     print("TT,TF,FT,FF",val_cor_00,val_cor_01,val_cor_10,val_cor_11)
@@ -179,6 +184,7 @@ for epoch in range(n_epochs):
     cor_matrix[1].append(val_cor_01)
     cor_matrix[2].append(val_cor_10)
     cor_matrix[3].append(val_cor_11)
+
 
     plt.figure(figsize=(18,18))
     plt.subplot(311)

@@ -160,7 +160,7 @@ class ResNet(nn.Module):
             nn.MaxPool1d(3,2,1)
         )
 
-        self.body = self.makelayers([3,4,6,3])
+        self.body = self.makelayers([2,2,2,2])
 
         self.fc1 = nn.Linear(32*512, 2*864)
         self.fc2 = nn.Linear(2*864,2*512)
@@ -201,11 +201,11 @@ class ResNet(nn.Module):
         x = x.view(-1,32*512)
         # print(x.shape)
         x = self.fc1(x)
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc2(x)
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc3(x)
-        # x = F.dropout(x, p=0.25, training=self.training)
+        x = F.dropout(x, p=0.25, training=self.training)
         x = self.fc4(x)
         
         return self.outfunc(x)
