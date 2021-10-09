@@ -6,4 +6,4 @@
 cd $PBS_O_WORKDIR
 
 
-python /home/zerui603/MDN_lc/iden_1D/testdataset.py
+python /home/zerui603/MDN_lc/iden_1D/testnet.py

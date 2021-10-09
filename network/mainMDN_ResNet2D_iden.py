@@ -46,8 +46,8 @@ size_val = 20000
 ## batch size and epoch
 batch_size_train = 3000
 batch_size_val = 2000
-n_epochs = 25
-learning_rate = 5e-5
+n_epochs = 200
+learning_rate = 3e-5
 stepsize = 10
 gamma_0 = 0.75
 momentum = 0.3
@@ -75,8 +75,8 @@ if reload == 1:
     network.load_state_dict(torch.load(preload_Netmodel))
 
 optimizer = optim.Adam(network.parameters(), lr=learning_rate)
-scheduler = optim.lr_scheduler.StepLR(optimizer,step_size=stepsize,gamma=gamma_0)
-# optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=1, verbose=True, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
+# scheduler = optim.lr_scheduler.StepLR(optimizer,step_size=stepsize,gamma=gamma_0)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=4, verbose=True, threshold=0.05, threshold_mode='rel', cooldown=1, min_lr=0, eps=1e-7)
 
 # Training
 
@@ -116,7 +116,7 @@ for epoch in range(n_epochs):
             print("Epoch:[", epoch + 1, sam, "] loss:", loss.item(),str(datetime.datetime.now()))
         sam = sam+1
        
-    scheduler.step()
+    
     loss_figure.append(epoch_rs/sam)
     print("Training_Epoch:[", epoch + 1, "] Training_loss:", epoch_rs/sam,str(datetime.datetime.now()))
 
@@ -171,6 +171,9 @@ for epoch in range(n_epochs):
     val_loss_figure.append(val_epoch_rs/val_sam)
     val_correct_list.append(val_correct/size_val)
     print("val_Epoch:[", epoch + 1, "] val_loss:", val_epoch_rs/val_sam,str(datetime.datetime.now()))
+
+    scheduler.step(metrics = val_epoch_rs/val_sam)
+
     print("Correct valset: ",val_correct,"/",size_val)
     print("TT,TF,FT,FF",val_cor_00,val_cor_01,val_cor_10,val_cor_11)
     cor_matrix[0].append(val_cor_00)

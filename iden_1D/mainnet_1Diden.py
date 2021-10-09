@@ -44,7 +44,7 @@ size_val = 60000
 batch_size_train = 10000
 batch_size_val =2000
 n_epochs = 200
-learning_rate = 5e-6
+learning_rate = 1e-6
 stepsize = 15
 gamma_0 = 0.9
 momentum = 0.5
@@ -174,7 +174,7 @@ for epoch in range(n_epochs):
     val_loss_figure.append(val_epoch_rs/val_sam)
     val_correct_list.append(val_correct/size_val)
 
-    scheduler.step(metrics=val_epoch_rs/val_sam)
+    scheduler.step()
 
 
     print("val_Epoch:[", epoch + 1, "] val_loss:", val_epoch_rs/val_sam,str(datetime.datetime.now()))
