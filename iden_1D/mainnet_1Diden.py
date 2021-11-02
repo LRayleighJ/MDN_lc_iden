@@ -36,22 +36,22 @@ torch.backends.cudnn.benchmark = True
 ## number of points
 
 ## size of trainingset library
-size_train = 1500000
+size_train = 300000
 ## size of validationset library
-size_val = 60000
+size_val = 20000
 
 ## batch size and epoch
 batch_size_train = 10000
 batch_size_val =2000
 n_epochs = 200
-learning_rate = 1e-6
-stepsize = 15
+learning_rate = 1e-5
+stepsize = 3
 gamma_0 = 0.9
 momentum = 0.5
 
 ## path of trainingset and validationset
-rootdir = "/scratch/zerui603/KMTiden_1d/training/"
-rootval = "/scratch/zerui603/KMTiden_1d/val/"
+rootdir = "/scratch/zerui603/KMT_simu_lowratio/training/"
+rootval = "/scratch/zerui603/KMT_simu_lowratio/test/"
 
 
 # Loading datas
@@ -105,6 +105,7 @@ for epoch in range(n_epochs):
         # print(np.max(labels.detach().cpu().numpy()),np.min(labels.detach().cpu().numpy()))
         
         loss = criterion(outputs,labels)
+        # print(labels)
     
         loss.backward()
         optimizer.step()

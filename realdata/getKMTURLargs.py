@@ -10,7 +10,7 @@ def grab(url):
     resp = urllib.request.urlopen(url)
     # 读取网页源码内容
     data = resp.read().decode('utf-8')
-    labels = ["t_0","[t_E]*[t_eff]*",r"u_0"]
+    labels = ["t_0","[t_E]*[t_eff]*",r"u_0","Ibase"]
     values = []
     for label in labels:
         pattern = r"<td width=130>"+label+"</td>.*</tr>"
@@ -26,7 +26,7 @@ targetdir = "/scratch/zerui603/KMTData/"
 years = [2016,2017,2018,2019,2020]
 num_events = [2588, 2817, 2781, 3303, 894]
 
-frame_label = ["t_0","t_E","u_0"]
+frame_label = ["t_0","t_E","u_0","I_base"]
 
 frame_array = []
 frame_index = []
