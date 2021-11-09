@@ -41,11 +41,11 @@ size_train = 300000
 size_val = 20000
 
 ## batch size and epoch
-batch_size_train = 10000
+batch_size_train = 20000
 batch_size_val =2000
 n_epochs = 200
 learning_rate = 1e-5
-stepsize = 3
+stepsize = 10
 gamma_0 = 0.9
 momentum = 0.5
 
@@ -121,7 +121,7 @@ for epoch in range(n_epochs):
     print("Training_Epoch:[", epoch + 1, "] Training_loss:", epoch_rs/sam,str(datetime.datetime.now()))
     print("learning rate: ",optimizer.state_dict()['param_groups'][0]['lr'])
 
-    if (epoch+1)%10 == 0:
+    if (epoch+1)%5 == 0:
         torch.save(network.state_dict(),preload_Netmodel)
         print("netparams have been saved once")
 
