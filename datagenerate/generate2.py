@@ -7,6 +7,7 @@ import random
 import multiprocessing as mp
 import gc
 import sys
+import traceback
 
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
 datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
@@ -14,14 +15,12 @@ datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
 storedir = "/scratch/zerui603/KMT_simu_lowratio/test/"
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
-global num_batch
-global num_bthlc
-global num_echo
 
-num_echo = 0
+num_echo = 1
 num_batch = 5000
 num_bthlc = 20
-
+num_batch_eachpools = 1000
+num_process = 5
 
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
@@ -115,12 +114,21 @@ class TimeData(object):
                 
             
             if self.badseq(d_times,35*np.mean(d_times)):
-                print("Time cadence is not well.",count)
+                # print("Time cadence is not well.",count)
                 continue
             else:
-                print("successfully get timedata")
+                # print("successfully get timedata")
                 return time_cut,d_times
-                
+    def __del__(self):
+        del self.time_datadir
+        del self.filename
+        del self.time_data
+        del self.num_timeseq
+        del self.num_point
+
+        del self.time_data_available
+        del self.num_available
+        gc.collect()        
                 
             
 class NoiseData(object):
@@ -155,6 +163,8 @@ class NoiseData(object):
     def noisemodel(self,mag):
         posi = self.gen_index(mag).astype(np.int)
         if np.min(posi)<0 or np.max(posi)>=len(self.state):
+            print("mag range error: ",np.min(posi),np.max(posi),len(self.state))
+            
             raise RuntimeError("The range of magnitude is out of range")
         errorbar = []
         for i_posi in range(len(posi)):
@@ -194,8 +204,13 @@ def gen_simu_data(index_batch):
         for i_5 in range(50):
             try:
                 times,d_times = c_time.get_t_seq()
+                t_E = (times[-1]-times[0])/4
+                if t_E <= 0.:
+                    raise RuntimeError("tE<=0")
                 break
             except:
+                del c_time
+                gc.collect()
                 c_time = TimeData(datadir=datadir_time,num_point=1000)
                 print("time failure once")
                 continue
@@ -205,27 +220,39 @@ def gen_simu_data(index_batch):
         count_gen_args = 0
         count_args_bearing = 0
         for i_4 in range(50):
-            
-            basis_m = np.min([20+2*np.random.randn(),22])
-            basis_m = np.max([18,basis_m])
-            u_0, rho, q, s, alpha = generate_random_parameter_set()
-            args_data = [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
-            # single = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E})
-            planet = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E, 's': s, 'q': q, 'alpha': alpha,'rho': rho})
-            # planet_degeneracy = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E, 's': 1/s, 'q': q, 'alpha': alpha,'rho': rho})
-            
-            planet.set_default_magnification_method('VBBL')
-            
-            lc = planet.magnification(times)
-            if np.min(magnitude_tran(lc,m_0=basis_m)) < 9.3:
-                continue
-            
-            noi, sig = noi_model.noisemodel(magnitude_tran(lc,m_0=basis_m))
-            lc_noi = magnitude_tran(lc,basis_m) + noi
+            try:
+                basis_m = np.min([20+2*np.random.randn(),22])
+                basis_m = np.max([18,basis_m])
+                u_0, rho, q, s, alpha = generate_random_parameter_set()
+                if u_0 == 0:
+                    while True:
+                        u_0, rho, q, s, alpha = generate_random_parameter_set()
+                        if u_0 != 0:
+                            break
+                        else:
+                            continue
+                args_data = [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
+                # single = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E})
+                planet = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E, 's': s, 'q': q, 'alpha': alpha,'rho': rho})
+                # planet_degeneracy = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E, 's': 1/s, 'q': q, 'alpha': alpha,'rho': rho})
+                
+                planet.set_default_magnification_method('VBBL')
+                
+                lc = planet.magnification(times)
+                if np.min(magnitude_tran(lc,m_0=basis_m)) < 9.3:
+                    continue
+                
+                if np.isnan(magnitude_tran(lc,m_0=basis_m)).any():
+                    print(args_data)
+                    print(lc)
 
-            break
-            '''
+                noi, sig = noi_model.noisemodel(magnitude_tran(lc,m_0=basis_m))
+                lc_noi = magnitude_tran(lc,basis_m) + noi
+
+                break
+            
             except:
+                print(traceback.print_exc())
                 print("fail generation of args")
                 count_gen_args += 1
                 if count_args_bearing > 5:
@@ -237,19 +264,26 @@ def gen_simu_data(index_batch):
                     count_args_bearing += 1
                     continue
                 continue
-            '''
+            
     
         data_array=np.array([args_data,list(times),list(d_times),list(lc_noi),list(sig),list(magnitude_tran(lc,basis_m))],dtype=object)
         np.save(storedir+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
         print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
+    
+    del c_time
+    del noi_model
+    gc.collect()
         
 if __name__=="__main__":
     u = num_echo*num_batch
+    total_batch_pools = np.int(num_batch//num_batch_eachpools)
     starttime = datetime.datetime.now()
     print("starttime:",starttime)
     print("cpu_count:",os.cpu_count())
-    with mp.Pool() as p:
-        p.map(gen_simu_data, range(u, u+num_batch))
+    for index_pool in range(total_batch_pools):
+        with mp.Pool(num_process) as p:
+            p.map(gen_simu_data, range(u+num_batch_eachpools*index_pool, u+num_batch_eachpools*(index_pool+1)))
+            
     endtime = datetime.datetime.now()
     print("end time:",endtime)
     print("total:",endtime - starttime)

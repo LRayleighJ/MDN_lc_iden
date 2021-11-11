@@ -26,7 +26,7 @@ def chi2_for_model(theta, event, parameters_to_fit):
         setattr(event.model.parameters, parameter, theta[key])
     return event.get_chi2()
 
-rootdir = "/scratch/zerui603/KMT_simu_lowratio/training/"
+rootdir = "/scratch/zerui603/KMT_simu_lowratio/qseries/00to05/"
 targetdir = "/home/zerui603/MDN_lc/datagenerate/testfig/"
 
 def fit_npy(index):
@@ -41,6 +41,8 @@ def fit_npy(index):
     mag = np.array(data_lc[2])
     errorbar = np.array(data_lc[3])
     mag_clean = np.array(data_lc[4])
+    args_minimize = np.array(data_lc[5])
+    '''
     #try:
     initial_guess = [label[5],label[7],label[0],label[6]]
 
@@ -58,28 +60,24 @@ def fit_npy(index):
             result_fun = result.fun[0]
     else:
         result_fun = result.fun
-
-    args_minimize = result.x.tolist()
+    '''
+    
     lc_fit_minimize = mag_cal(time,*args_minimize)
 
-    chi_s_minimize = chi_square(lc_fit_minimize,mag,errorbar)
+    chi_s_minimize = label[-1]
     chi_s_binary = chi_square(mag_clean,mag,errorbar)
     print(index,"chi^2 for minimize: ",chi_s_minimize)
-
+    
     plt.figure(figsize=(20,12))
     plt.errorbar(time,mag,yerr=errorbar,fmt='o',capsize=2,elinewidth=1,ms=3,alpha=0.7,zorder=0)
     plt.plot(time,mag_clean,label="mag_clean")
     plt.plot(time,lc_fit_minimize,label="single fit")
     plt.gca().invert_yaxis()
-    plt.title("[u_0=%.3f, rho=%.4f, q=%.7f, s=%.3f, alpha=%.2f, t_E=%.2f, basis_m=%.2f, t_0=%.2f,label=%d,$\Delta\chi^2$=%.3f"%(label[0],label[1],label[2],label[3],label[4],label[5],label[6],label[7],label[8],chi_s_minimize-chi_s_binary))
+    plt.title("[u_0=%.3f, rho=%.4f, q=%.7f, s=%.3f, alpha=%.2f, t_E=%.2f, basis_m=%.2f, t_0=%.2f,$\Delta\chi^2$=%.3f"%(label[0],label[1],label[2],label[3],label[4],label[5],label[6],label[7],chi_s_minimize-chi_s_binary))
     plt.savefig(targetdir+str(index)+"_lc.png")
     plt.close()
 
-    '''
-    except:
-        print("Minimize error",index)
-        return 
-    '''
+    
     return 
 
 if __name__=="__main__":
