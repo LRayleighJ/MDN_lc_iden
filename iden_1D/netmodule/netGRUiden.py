@@ -55,45 +55,76 @@ def noise_model(magnitude):
 def chi_square(single,binary,sigma):
     return np.sum(np.power((single-binary)/sigma,2))
 
+def renormal_data(x):
+    return (x-np.mean(x))/np.std(x)
 
 def default_loader(data_root,posi_lc,judge_train=0):
-    # [u_0, rho, q, s, alpha, t_E]
-    # datadir = pd.DataFrame(np.load(dataroot+str(posi_lc)+".npy", allow_pickle=True))
+    ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2, label]
+    ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize, chi_array]
     datadir = list(np.load(data_root+str(posi_lc+1000000*judge_train)+".npy", allow_pickle=True))
     
     labels = np.array(datadir[0],dtype=np.float64)
 
-    lc_mag = np.array(datadir[3],dtype=np.float64)
-    lc_mag = np.mean(np.sort(lc_mag)[-50:])-np.array(lc_mag)
+    lc_mag = np.array(datadir[8],dtype=np.float64)**2
+    # lc_mag = np.mean(np.sort(lc_mag)[-50:])-np.array(lc_mag)
     lc_mag = lc_mag.reshape((1000,1))
+    lc_mag = renormal_data(lc_mag)
+    
     lc_time = np.array(datadir[1],dtype=np.float64)
-    lc_time = (lc_time-lc_time[0])/(lc_time[-1]-lc_time[0])
     lc_time = lc_time.reshape((1000,1))
-    lc_sig = np.array(datadir[4],dtype=np.float64).reshape((1000,1))
-    lc_sig = lc_sig*100
+    lc_time = renormal_data(lc_time)
+
+    lc_sig = np.array(datadir[4],dtype=np.float64)
+    lc_sig = lc_sig.reshape((1000,1))
+    # lc_sig = (lc_sig-lc_mean)/np.std(lc_sig)
+    lc_sig = renormal_data(lc_sig)
 
     data_input = np.concatenate((lc_mag,lc_time,lc_sig),axis=1)
-
-    # print(data_input.shape)
-
-    lg_q = np.log10(labels[2])
-    lg_s = np.log10(labels[3])
-    alpha = labels[4]
-    u0 = labels[0]
-
-    q_label = lg_q/4
-    s_label = (lg_s-np.log10(0.3))/(np.log10(3)-np.log10(0.3))
-    # alpha_label = alpha/360
-    # u0_label = u0
-    ux_label = (u0*np.cos(np.pi/180*alpha)+1)/2
-    uy_label = (u0*np.sin(np.pi/180*alpha)+1)/2
     
+    singleorbinary = labels[-1]
+    chi_s = labels[-2]
 
-    label = np.array([labels[-1],1-labels[-1]]).astype(np.float64)
+    if (chi_s < 20)&(singleorbinary > 0.5):
+        singleorbinary = 0
+
+    label = np.array([singleorbinary,1-singleorbinary]).astype(np.float64)
 
     lc_data = np.array([data_input])
 
     return lc_data, label
+
+def default_loader_fortest(data_root,posi_lc,judge_train=0):
+    ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2, label]
+    ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize, chi_array]
+    datadir = list(np.load(data_root+str(posi_lc+1000000*judge_train)+".npy", allow_pickle=True))
+    
+    labels = np.array(datadir[0],dtype=np.float64)
+
+    lc_mag = np.array(datadir[8],dtype=np.float64)
+    # lc_mag = np.mean(np.sort(lc_mag)[-50:])-np.array(lc_mag)
+    lc_mag = lc_mag.reshape((1000,1))
+    lc_mag = renormal_data(lc_mag)
+    
+    lc_time = np.array(datadir[1],dtype=np.float64)
+    lc_time = lc_time.reshape((1000,1))
+    lc_time = renormal_data(lc_time)
+
+    lc_sig = np.array(datadir[4],dtype=np.float64)
+    lc_sig = lc_sig.reshape((1000,1))
+    # lc_sig = (lc_sig-lc_mean)/np.std(lc_sig)
+    lc_sig = renormal_data(lc_sig)
+
+    data_input = np.concatenate((lc_mag,lc_time,lc_sig),axis=1)
+    
+    singleorbinary = labels[-1]
+    chi_s = labels[-2]
+
+    if (chi_s < 0)&(singleorbinary > 0.5):
+        singleorbinary = 0
+
+    lc_data = np.array([data_input])
+
+    return lc_data, labels
 
 
 class Mydataset(Dataset):

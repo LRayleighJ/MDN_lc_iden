@@ -14,22 +14,22 @@ from scipy.optimize import curve_fit
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
 datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
 
-storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/00to05test/"
+storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/10to15test/"
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
 
-singleorbinary = 0 # 0:single 1:binary, else: error
+singleorbinary = 1 # 0:single 1:binary, else: error
 
-num_echo = 1
-num_batch = 2000
-num_bthlc = 25
+num_echo = 0
+num_batch = 1000
+num_bthlc = 50
 num_batch_eachpools = 1000
 num_process = 20
 
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
     rho = 10.**random.uniform(-4, -2) # log-flat between 1e-4 and 1e-2
-    q = 10.**random.uniform(-0.5, 0) # including both planetary & binary events
+    q = 10.**random.uniform(-1.5, -1.) # including both planetary & binary events
     s = 10.**random.uniform(np.log10(0.3), np.log10(3))
     alpha = random.uniform(0, 360) # 0-360 degrees
     ## use Penny (2014) parameterization for small-q binaries ##
@@ -275,8 +275,19 @@ def gen_simu_data(index_batch):
 
                 chi_s_minimize = chi_square(lc_fit_minimize,lc_noi,sig)
                 
-                args_data.append(chi_s_minimize)
+                chi_s_model = chi_square(magnitude_tran(lc,basis_m),lc_noi,sig)
+
+                delta_chi_s = chi_s_minimize-chi_s_model 
+
+                args_data.append(delta_chi_s)
+
                 args_data.append(singleorbinary)
+                '''
+                if delta_chi_s < 0:
+                    args_data.append(0)
+                else:
+                    args_data.append(singleorbinary)
+                '''
                 break
             
             except:
@@ -293,7 +304,9 @@ def gen_simu_data(index_batch):
                     continue
                 continue
             
-    
+        ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2, label]
+        ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize, chi_array]
+
         data_array=np.array([args_data,list(times),list(d_times),list(lc_noi),list(sig),list(magnitude_tran(lc,basis_m)),list(args_minimize),list(lc_fit_minimize),list((lc_noi-lc_fit_minimize)/sig)],dtype=object)
         np.save(storedir+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
         # print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
@@ -304,14 +317,13 @@ def gen_simu_data(index_batch):
         
 if __name__=="__main__":
     u = num_echo*num_batch
-    total_batch_pools = np.int(num_batch//num_batch_eachpools)
     starttime = datetime.datetime.now()
     print("starttime:",starttime)
     print("cpu_count:",os.cpu_count())
-    for index_pool in range(total_batch_pools):
-        with mp.Pool(num_process) as p:
-            p.map(gen_simu_data, range(u+num_batch_eachpools*index_pool, u+num_batch_eachpools*(index_pool+1)))
-            
+
+    with mp.Pool(num_process) as p:
+        p.map(gen_simu_data, range(u,u+num_batch))
+        
     endtime = datetime.datetime.now()
     print("end time:",endtime)
     print("total:",endtime - starttime)
