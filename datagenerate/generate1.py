@@ -14,7 +14,7 @@ from scipy.optimize import curve_fit
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
 datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
 
-storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/10to15test/"
+storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/10to15long/"
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
 
@@ -22,14 +22,14 @@ singleorbinary = 1 # 0:single 1:binary, else: error
 
 num_echo = 0
 num_batch = 1000
-num_bthlc = 50
+num_bthlc = 500
 num_batch_eachpools = 1000
 num_process = 20
 
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
     rho = 10.**random.uniform(-4, -2) # log-flat between 1e-4 and 1e-2
-    q = 10.**random.uniform(-1.5, -1.) # including both planetary & binary events
+    q = 10.**random.uniform(-2.5, -2.) # including both planetary & binary events
     s = 10.**random.uniform(np.log10(0.3), np.log10(3))
     alpha = random.uniform(0, 360) # 0-360 degrees
     ## use Penny (2014) parameterization for small-q binaries ##
@@ -193,7 +193,7 @@ def chi2_for_minimize(args,time,mag,sigma):
 
 def gen_simu_data(index_batch):
     print("Batch",index_batch,"has started")
-    c_time = TimeData(datadir=datadir_time,num_point=1000)
+    c_time = TimeData(datadir=datadir_time,num_point=2000)
     noi_model = NoiseData(datadir=datadir_noise)
     counter_total = 0
     for index_slc in range(num_bthlc):
@@ -202,17 +202,17 @@ def gen_simu_data(index_batch):
         for i_5 in range(50):
             try:
                 times,d_times = c_time.get_t_seq()
-                t_E = (times[-1]-times[0])/4
+                t_E = (times[-1]-times[0])/8
                 if t_E <= 0.:
                     raise RuntimeError("tE<=0")
                 break
             except:
                 del c_time
                 gc.collect()
-                c_time = TimeData(datadir=datadir_time,num_point=1000)
+                c_time = TimeData(datadir=datadir_time,num_point=2000)
                 print("time failure once")
                 continue
-        t_E = (times[-1]-times[0])/4
+        t_E = (times[-1]-times[0])/8
 
         t_0 = 0
         count_gen_args = 0

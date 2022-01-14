@@ -21,5 +21,5 @@ unset __conda_setup
 # <<< conda initialize <<<
 conda activate PyTorch-1.9.0
 
-CUDA_VISIBLE_DEVICES=0,1,2,3 python /home/zerui603/MDN_lc/iden_1D/mainnet_1Diden.py
+CUDA_VISIBLE_DEVICES=6,7,8,9 python /home/zerui603/MDN_lc/iden_1D/mainnet_1Diden.py
 conda deactivate

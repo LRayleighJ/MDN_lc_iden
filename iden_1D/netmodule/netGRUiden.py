@@ -84,7 +84,7 @@ def default_loader(data_root,posi_lc,judge_train=0):
     singleorbinary = labels[-1]
     chi_s = labels[-2]
 
-    if (chi_s < 20)&(singleorbinary > 0.5):
+    if (chi_s < 15)&(singleorbinary > 0.5):
         singleorbinary = 0
 
     label = np.array([singleorbinary,1-singleorbinary]).astype(np.float64)

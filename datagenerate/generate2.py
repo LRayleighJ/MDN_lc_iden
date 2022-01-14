@@ -14,7 +14,7 @@ from scipy.optimize import curve_fit
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
 datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
 
-storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/10to15test/"
+storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/20to25test/"
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
 
@@ -29,7 +29,7 @@ num_process = 20
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
     rho = 10.**random.uniform(-4, -2) # log-flat between 1e-4 and 1e-2
-    q = 10.**random.uniform(-1.5, -1.) # including both planetary & binary events
+    q = 10.**random.uniform(-2.5, -2.) # including both planetary & binary events
     s = 10.**random.uniform(np.log10(0.3), np.log10(3))
     alpha = random.uniform(0, 360) # 0-360 degrees
     ## use Penny (2014) parameterization for small-q binaries ##

@@ -21,14 +21,14 @@ import netmodule.netGRUiden as lcnet
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"]="4"
 
-trainortest = 0 # 0:test, 1:train
+trainortest = 1 # 0:test, 1:train
 fullorparttest = 0 # 0: part testfig 1: full testfig
 
-name_group = "10to15"
+name_group = "20to25"
 # prepare
 
 # reload
-reload = 1
+reload = 0
 preload_Netmodel = "GRUresnet_iden_res_"+name_group+".pkl"
 path_params = "/scratch/zerui603/netparams/"
 num_process = 16
@@ -54,7 +54,7 @@ size_val = 70000
 ## batch size and epoch
 batch_size_train = 35000
 batch_size_val =10000
-n_epochs = 500
+n_epochs = 30
 learning_rate = 8e-6
 stepsize = 6
 gamma_0 = 0.8
@@ -69,10 +69,10 @@ fullrootdraw = "/scratch/zerui603/figtest_iden/"+name_group+"/"
 
 ## arguments for training
 num_test = 70000
-batch_test = 10000
+batch_test = 12000
 
 def signlog(x):
-    return (np.abs(x)/x)*np.log10(np.abs(x))
+    return np.log10(np.abs(x))
 
 class testdraw:
     def __init__(self,filelist,datadir,filelabel,fullrootdraw):
@@ -259,26 +259,35 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
             file_bs = np.append(file_bs, file_bs_batch)
             file_sb = np.append(file_sb, file_sb_batch)
             file_ss = np.append(file_ss, file_ss_batch)
-
+    print(len(bchi_s_act))
+    print(len(schi_s_act))
+    print(len(bchi_s_pre))
+    print(len(schi_s_pre))
     plt.figure(figsize=[7,20])
     plt.subplot(511)
     plt.hist(signlog(bchi_s_act),bins=1000,label="actual binary",alpha=0.5)
     plt.hist(signlog(schi_s_act),bins=1000,label="actual single",alpha=0.5)
     plt.hist(signlog(bchi_s_pre),bins=1000,label="predicted binary",alpha=0.5)
     plt.hist(signlog(schi_s_pre),bins=1000,label="predicted single",alpha=0.5)
+
+    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
     plt.legend()
     plt.subplot(512)
     plt.hist(signlog(bchi_s_act),bins=1000,label="actual binary",alpha=0.5)
     plt.legend()
+    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
     plt.subplot(513)
     plt.hist(signlog(schi_s_act),bins=1000,label="actual single",alpha=0.5)
     plt.legend()
+    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
     plt.subplot(514)
     plt.hist(signlog(bchi_s_pre),bins=1000,label="predicted binary",alpha=0.5)
     plt.legend()
+    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
     plt.subplot(515)
     plt.hist(signlog(schi_s_pre),bins=1000,label="predicted single",alpha=0.5)
     plt.legend()
+    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
     plt.savefig("histbs_"+name_group+".png")
     plt.close()
 
@@ -354,41 +363,6 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
         return 0
     elif fullorparttest == 1:
         return filename_list
-        """
-        for index_draw in range(len(label_list)):
-            print(label_list[index_draw],len(filename_list[index_draw]))
-            filelist = filename_list[index_draw]
-            size_filelist = len(filelist)
-
-            with mp.Pool(num_process) as p:
-                p.map(draw_testfig(filelist), range(size_filelist))
-        """
-    '''
-    for index in range(num_test):
-        lc_data,args = lcnet.default_loader_fortest(data_root = datadir,posi_lc = index)
-        inputs = torch.from_numpy(np.array([lc_data])).float()
-
-        if use_gpu:
-            inputs = inputs.cuda()
-        
-        network.eval()
-        outputs = network(inputs).detach().cpu().numpy()[0]
-        
-        bspre = np.int(np.around(outputs[0]))
-        bsact = np.int(np.around(args[-1]))
-        if bspre:
-            bchi_s_pre.append(args[-2])
-        else:
-            schi_s_pre.append(args[-2])
-        
-        if bsact:
-            bchi_s_act.append(args[-2])
-        else:
-            schi_s_act.append(args[-2])
-    
-    
-    '''
-
 
 def training():
     # Loading datas

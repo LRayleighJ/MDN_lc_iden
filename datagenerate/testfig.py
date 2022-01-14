@@ -26,58 +26,55 @@ def chi2_for_model(theta, event, parameters_to_fit):
         setattr(event.model.parameters, parameter, theta[key])
     return event.get_chi2()
 
-rootdir = "/scratch/zerui603/KMT_simu_lowratio/qseries/00to05/"
+rootdir = "/scratch/zerui603/KMT_simu_lowratio/qseries/10to15longtest/"
 targetdir = "/home/zerui603/MDN_lc/datagenerate/testfig/"
 
 def fit_npy(index):
     path_temp = rootdir+str(index)+".npy"
-    data = np.load(path_temp,allow_pickle=True)
-    data_lc = np.array(data[1:])
-    label = data[0]
-    # [u_0, rho, q, s, alpha, t_E, basis_m, t_0,0]
-    #print([len(x) for x in data_lc])
+    data = list(np.load(path_temp,allow_pickle=True))
     
-    time = np.array(data_lc[0])
-    mag = np.array(data_lc[2])
-    errorbar = np.array(data_lc[3])
-    mag_clean = np.array(data_lc[4])
-    args_minimize = np.array(data_lc[5])
-    '''
-    #try:
-    initial_guess = [label[5],label[7],label[0],label[6]]
+    labels = list(np.array(data[0],dtype=np.float64))
+    ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2,chi^2_test, label]
+    ## args_data_test,list(times),list(d_times),list(lc_noi),list(sig),list(magnitude_tran(lc,basis_m)),list(args_minimize),list(args_minimize_fortest),list(lc_fit_minimize),list(lc_fit_minimize_fortest)
+    time = data[1]
+    lc = np.array(data[3])
+    sig = np.array(data[4])
+    lc_single = np.array(data[8])
+    lc_model = np.array(data[5])
+
+    lc_single_lesspointfit = np.array(data[9])
 
 
-    result = op.minimize(chi2_for_minimize, x0=initial_guess,args=(time,mag,errorbar), method='Nelder-Mead')
-    # print("Fitting was successful? {:}".format(result.success))
-    if not result.success:
-        print(result.message,index)
-        return 
-    # print("Function evaluations: {:}".format(result.nfev))
-    if isinstance(result.fun, np.ndarray):
-        if result.fun.ndim == 0:
-            result_fun = float(result.fun)
-        else:
-            result_fun = result.fun[0]
-    else:
-        result_fun = result.fun
-    '''
-    
-    lc_fit_minimize = mag_cal(time,*args_minimize)
+    mag_max_lim = np.mean(np.sort(lc_model)[-25:])
+    mag_min_lim = np.mean(np.sort(lc_model)[:25])
+    mag_max_lim += 0.1*(mag_max_lim-mag_min_lim)
+    mag_min_lim -= 0.1*(mag_max_lim-mag_min_lim)
 
-    chi_s_minimize = label[-1]
-    chi_s_binary = chi_square(mag_clean,mag,errorbar)
-    print(index,"chi^2 for minimize: ",chi_s_minimize)
+    plt.figure(figsize=[12,8])
     
-    plt.figure(figsize=(20,12))
-    plt.errorbar(time,mag,yerr=errorbar,fmt='o',capsize=2,elinewidth=1,ms=3,alpha=0.7,zorder=0)
-    plt.plot(time,mag_clean,label="mag_clean")
-    plt.plot(time,lc_fit_minimize,label="single fit")
+    plt.errorbar(time,lc,yerr=sig,fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,zorder=0)
+    plt.scatter(time,lc,s=4,c="r",label = "lightcurve")
+    plt.plot(time,lc_single,label="single fit")
+    plt.plot(time,lc_single_lesspointfit,label="single fit (less points for fitting)")
+    plt.plot(time,lc_model,label="model")
+    plt.xlabel("time/HJD")
+    plt.ylabel("magnitude")
+    plt.ylim(mag_min_lim,mag_max_lim)
+    plt.legend()
     plt.gca().invert_yaxis()
-    plt.title("[u_0=%.3f, rho=%.4f, q=%.7f, s=%.3f, alpha=%.2f, t_E=%.2f, basis_m=%.2f, t_0=%.2f,$\Delta\chi^2$=%.3f"%(label[0],label[1],label[2],label[3],label[4],label[5],label[6],label[7],chi_s_minimize-chi_s_binary))
+    
+
+    if labels[-1] == 1:
+        plt.suptitle(r"$\log_{10} q$=%.3f,$\log_{10} s=$%.3f,$u_0=$%.3f,$\alpha=$%.1f,$\Delta \chi^2$:%.3f,$\Delta \chi^2$(less fitting):%.3f"%(np.log10(labels[2]),np.log10(labels[3]),labels[0],labels[4],labels[-3],labels[-2],))
+    else:
+        plt.suptitle("$\Delta \chi^2$:%.3f,$\Delta \chi^2$(less fitting):%.3f"%(labels[-3],labels[-2],))
+
     plt.savefig(targetdir+str(index)+"_lc.png")
     plt.close()
 
     
+
+    print(str(index),labels[-3],labels[-2])
     return 
 
 if __name__=="__main__":
