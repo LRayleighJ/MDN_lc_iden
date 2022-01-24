@@ -21,10 +21,10 @@ import netmodule.netGRUiden as lcnet
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"]="4"
 
-trainortest = 1 # 0:test, 1:train
+trainortest = 0 # 0:test, 1:train
 fullorparttest = 0 # 0: part testfig 1: full testfig
 
-name_group = "20to25"
+name_group = "10to15"
 # prepare
 
 # reload
@@ -298,6 +298,85 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     filename_list = [file_bb,file_bs,file_sb,file_ss]
 
     print("actual/predicted: bb,bs,sb,ss",len(file_bb),len(file_bs),len(file_sb),len(file_ss))
+
+    ### Discuss the relationship between args and chi^2 of bs set
+
+    indexlist_testbs = np.random.randint(0,len(filename_list[1]),5000)
+
+    lgq_testbs = []
+    lgs_testbs = []
+    lgdchis_testbs = []             
+    np.save("/scratch/zerui603/forzip/index.npy",filename_list[1],allow_pickle=True)
+    for index_testbs in filename_list[1]:
+        data = list(np.load(datadir+str(index_testbs)+".npy", allow_pickle=True))
+        labels = list(np.array(data[0],dtype=np.float64))
+        ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, dchi^2, label]
+        lgq_testbs.append(np.log10(labels[2]))
+        lgs_testbs.append(np.log10(labels[3]))
+        lgdchis_testbs.append(np.log10(np.abs(labels[-2])))
+
+        os.system("cp "+datadir+str(index_testbs)+".npy"+" /scratch/zerui603/forzip/file/")
+
+        time = data[1]
+        lc = np.array(data[3])
+        sig = np.array(data[4])
+        lc_single = np.array(data[7])
+        lc_model = np.array(data[5])
+        chi_curve = np.array(data[8])
+
+        mag_max_lim = np.mean(np.sort(lc_model)[-25:])
+        mag_min_lim = np.mean(np.sort(lc_model)[:25])
+        mag_max_lim += 0.1*(mag_max_lim-mag_min_lim)
+        mag_min_lim -= 0.1*(mag_max_lim-mag_min_lim)
+
+        plt.figure(figsize=[12,21])
+        plt.subplot(311)
+        plt.errorbar(time,lc,yerr=sig,fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,zorder=0)
+        plt.scatter(time,lc,s=4,c="r",label = "lightcurve")
+        plt.plot(time,lc_single,label="single fit")
+        plt.plot(time,lc_model,label="model")
+        plt.xlabel("time/HJD")
+        plt.ylabel("magnitude")
+        plt.ylim(mag_min_lim,mag_max_lim)
+        plt.legend()
+        plt.gca().invert_yaxis()
+        plt.subplot(312)
+        plt.scatter(time,chi_curve**2,s=2)
+        plt.plot(time,0*np.array(time),linestyle="--",c="g")
+        plt.plot(time,1+0*np.array(time),linestyle="--",c="r")
+        plt.xlabel("time/HJD")
+        plt.ylabel(r"$(\frac{m_i-m_{single}}{\sigma_i})^2$")
+        
+        plt.subplot(313)
+        plt.scatter(time,chi_curve**2-((lc-lc_model)/sig)**2,s=2)
+        plt.plot(time,0*np.array(time),linestyle="--",c="g")
+        plt.plot(time,1+0*np.array(time),linestyle="--",c="r")
+        plt.xlabel("time/HJD")
+        plt.ylabel(r"$(\frac{m_i-m_{single}}{\sigma_i})^2-(\frac{m_i-m_{model}}{\sigma_i})^2$")
+
+
+        if labels[-1] == 1:
+            plt.suptitle(r"$\log_{10} q$=%.3f,$\log_{10} s=$%.3f,$u_0=$%.3f,$\alpha=$%.1f,$\Delta \chi^2$:%.3f,index=%d"%(np.log10(labels[2]),np.log10(labels[3]),labels[0],labels[4],labels[-2],index_testbs,))
+        else:
+            plt.suptitle("$\Delta \chi^2$:%.3f,index=%d"%(labels[-2],index_testbs,))
+
+        plt.savefig("/scratch/zerui603/forzip/fig/"+str(index_testbs)+".png")
+        plt.close()
+
+    plt.figure(figsize=(10,16))
+    plt.subplot(211)
+    plt.scatter(lgq_testbs,lgs_testbs,c = lgdchis_testbs,cmap = "hot",alpha = 0.5)
+    plt.xlabel("$\log_{10}q$")
+    plt.ylabel("$\log_{10}s$")
+    plt.colorbar()
+    plt.subplot(212)
+    plt.hist(lgdchis_testbs,bins=50,alpha=0.5)
+    plt.xlabel("$\log_{10}|\Delta \chi^2|$")
+    plt.ylabel("num")
+    plt.savefig("testbsargs_"+name_group+".png")
+
+
+
 
     if fullorparttest == 0:
         for index_draw in range(len(label_list)):
