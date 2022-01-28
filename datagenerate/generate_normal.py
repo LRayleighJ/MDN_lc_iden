@@ -11,25 +11,32 @@ import traceback
 import scipy.optimize as op
 from scipy.optimize import curve_fit
 
+# lists
+name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
+name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
+lgq_list = [0.,-0.5,-1.,-1.5,-2.,-2.5,-3.,-3.5]
+name_group = name_group_list[np.int(sys.argv[1])]
+lgq_max = lgq_list[np.int(sys.argv[1])]
+
+# 
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
 datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
 
-storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/20to25test/"
+storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"/"
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
 
-singleorbinary = 0 # 0:single 1:binary, else: error
+singleorbinary = np.int(sys.argv[2]) # 0:single 1:binary, else: error
 
-num_echo = 1
-num_batch = 1000
+num_echo = np.int(1-np.int(sys.argv[2]))
+num_batch = 10000
 num_bthlc = 50
-num_batch_eachpools = 1000
 num_process = 20
 
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
     rho = 10.**random.uniform(-4, -2) # log-flat between 1e-4 and 1e-2
-    q = 10.**random.uniform(-2.5, -2.) # including both planetary & binary events
+    q = 10.**random.uniform(lgq_max-0.5, lgq_max) # including both planetary & binary events
     s = 10.**random.uniform(np.log10(0.3), np.log10(3))
     alpha = random.uniform(0, 360) # 0-360 degrees
     ## use Penny (2014) parameterization for small-q binaries ##
@@ -192,8 +199,8 @@ def chi2_for_minimize(args,time,mag,sigma):
 
 
 def gen_simu_data(index_batch):
-    print("Batch",index_batch,"has started")
-    c_time = TimeData(datadir=datadir_time,num_point=1000)
+    # print("Batch",index_batch,"has started")
+    c_time = TimeData(datadir=datadir_time,num_point=2000)
     noi_model = NoiseData(datadir=datadir_noise)
     counter_total = 0
     for index_slc in range(num_bthlc):
@@ -202,22 +209,29 @@ def gen_simu_data(index_batch):
         for i_5 in range(50):
             try:
                 times,d_times = c_time.get_t_seq()
-                t_E = (times[-1]-times[0])/4
+                t_E = (times[-1]-times[0])/8
                 if t_E <= 0.:
                     raise RuntimeError("tE<=0")
                 break
             except:
                 del c_time
                 gc.collect()
-                c_time = TimeData(datadir=datadir_time,num_point=1000)
+                c_time = TimeData(datadir=datadir_time,num_point=2000)
                 print("time failure once")
                 continue
-        t_E = (times[-1]-times[0])/4
+
+        if i_5 == 49:
+            print(str(index_batch*num_bthlc+index_slc), "time-getting failure")
+        t_E = (times[-1]-times[0])/8
+
+        # for test 
+
+        times_fortest = times[500:500+1000]
 
         t_0 = 0
         count_gen_args = 0
         count_args_bearing = 0
-        for i_4 in range(50):
+        while True:
             try:
                 basis_m = np.min([20+2*np.random.randn(),22])
                 basis_m = np.max([18,basis_m])
@@ -229,7 +243,7 @@ def gen_simu_data(index_batch):
                             break
                         else:
                             continue
-                args_data = [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
+                args_data_test = [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
                 # single = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E})
                 if singleorbinary == 1:
                     planet = mm.Model({'t_0': t_0, 'u_0': u_0, 't_E': t_E, 's': s, 'q': q, 'alpha': alpha,'rho': rho})
@@ -242,18 +256,22 @@ def gen_simu_data(index_batch):
                 planet.set_default_magnification_method('VBBL')
                 
                 lc = planet.magnification(times)
+                
                 if np.min(magnitude_tran(lc,m_0=basis_m)) < 9.3:
                     continue
 
                 noi, sig = noi_model.noisemodel(magnitude_tran(lc,m_0=basis_m))
                 lc_noi = magnitude_tran(lc,basis_m) + noi
 
-                # Minimize
+                lc_noi_fortest = lc_noi[500:500+1000]
+                sig_fortest = sig[500:500+1000]
+
+                # Minimize using extend fitting
                 ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
                 initial_guess = [t_E,t_0,u_0,basis_m]
 
                 try:
-                    result = op.minimize(chi2_for_minimize, x0=initial_guess,args=(times,lc_noi,sig), method='Nelder-Mead')
+                    result = op.minimize(chi2_for_minimize, x0=initial_guess,args=(times_fortest,lc_noi_fortest,sig_fortest), method='Nelder-Mead')
                 except:
                     print("Minimize error")
                     continue
@@ -270,22 +288,19 @@ def gen_simu_data(index_batch):
                 else:
                     result_fun = result.fun
 
-                args_minimize = result.x.tolist()
-                lc_fit_minimize = mag_cal(times,*args_minimize)
+                args_minimize_fortest = result.x.tolist()
 
-                chi_s_minimize = chi_square(lc_fit_minimize,lc_noi,sig)
+                lc_fit_minimize_fortest = mag_cal(times_fortest,*args_minimize_fortest)
+                chi_s_minimize_fortest = chi_square(lc_fit_minimize_fortest,lc_noi_fortest,sig_fortest)
                 
-                chi_s_model = chi_square(magnitude_tran(lc,basis_m),lc_noi,sig)
+                chi_s_model = chi_square(magnitude_tran(lc[500:500+1000],basis_m),lc_noi_fortest,sig_fortest)
 
-                delta_chi_s = chi_s_minimize-chi_s_model 
+                delta_chi_s_fortest = chi_s_minimize_fortest-chi_s_model  
 
-                
-                '''
-                if delta_chi_s < 0:
-                    args_data.append(0)
-                else:
-                    args_data.append(singleorbinary)
-                '''
+                if singleorbinary == 1:
+                    if delta_chi_s_fortest < 10:
+                        #print("delta chi square fails once")
+                        continue
                 break
             
             except:
@@ -294,21 +309,23 @@ def gen_simu_data(index_batch):
                 count_gen_args += 1
                 if count_args_bearing > 5:
                     raise RuntimeError("Noise model crash")
+                    break
                 if count_gen_args > 20:
                     print("Reload noise model: ", count_args_bearing)
                     noi_model = NoiseData(datadir=datadir_noise)
                     count_gen_args = 0
                     count_args_bearing += 1
-                    continue
                 continue
-            
+        # original
+        ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2,chi^2_test, label]
+        ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize,args_minimize_test, lc_fit_minimize_test, chi_array]
+        # the data now we need
         ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2, label]
         ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize, chi_array]
-        args_data.append(delta_chi_s)
-        args_data.append(singleorbinary)
-        if len(args_data)!=10:
-            print(str(index_batch*num_bthlc+index_slc),"missing args")
-        data_array=np.array([args_data,list(times),list(d_times),list(lc_noi),list(sig),list(magnitude_tran(lc,basis_m)),list(args_minimize),list(lc_fit_minimize),list((lc_noi-lc_fit_minimize)/sig)],dtype=object)
+        args_data_test.append(delta_chi_s_fortest)
+        args_data_test.append(singleorbinary)
+        
+        data_array=np.array([args_data_test,list(times_fortest),list(d_times[500:500+1000]),list(lc_noi_fortest),list(sig_fortest),list(magnitude_tran(lc[500:500+1000],basis_m)),list(args_minimize_fortest),list(lc_fit_minimize_fortest),list((lc_noi_fortest-lc_fit_minimize_fortest)/sig_fortest)],dtype=object)
         np.save(storedir+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
         # print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
     

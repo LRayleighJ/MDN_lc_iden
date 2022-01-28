@@ -1,6 +1,6 @@
 #!/bin/bash
-#PBS -N net_iden_lc
-#PBS -lselect=1:ncpus=20:mem=256gb:ngpus=4
+#PBS -N testIdiotNet
+#PBS -lselect=1:ncpus=20:mem=128gb:ngpus=1
 #PBS -o /home/zerui603/MDN_lc/log/
 #PBS -e /home/zerui603/MDN_lc/log/
 cd $PBS_O_WORKDIR
@@ -20,7 +20,6 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 conda activate PyTorch-1.9.0
-for i in {0..7};do                       
-    CUDA_VISIBLE_DEVICES=6,7,8,9 python /home/zerui603/MDN_lc/iden_1D/mainnet_1Diden.py $i                               
-done 
+
+CUDA_VISIBLE_DEVICES=6,7,8,9 python /home/zerui603/MDN_lc/iden_1D/testbsbins.py
 conda deactivate

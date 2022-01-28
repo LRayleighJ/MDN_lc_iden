@@ -14,17 +14,21 @@ from prefetch_generator import BackgroundGenerator
 import pickle
 import gc 
 import multiprocessing as mp
+import sys
 
 import netmodule.netGRUiden as lcnet
 
 
+name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
+name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
+name_group = name_group_list[np.int(sys.argv[1])]
+
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"]="4"
 
-trainortest = 0 # 0:test, 1:train
+trainortest = 1 # 0:test, 1:train
 fullorparttest = 0 # 0: part testfig 1: full testfig
 
-name_group = "10to15"
 # prepare
 
 # reload
@@ -298,7 +302,7 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     filename_list = [file_bb,file_bs,file_sb,file_ss]
 
     print("actual/predicted: bb,bs,sb,ss",len(file_bb),len(file_bs),len(file_sb),len(file_ss))
-
+    """
     ### Discuss the relationship between args and chi^2 of bs set
 
     indexlist_testbs = np.random.randint(0,len(filename_list[1]),5000)
@@ -374,9 +378,7 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     plt.xlabel("$\log_{10}|\Delta \chi^2|$")
     plt.ylabel("num")
     plt.savefig("testbsargs_"+name_group+".png")
-
-
-
+    """
 
     if fullorparttest == 0:
         for index_draw in range(len(label_list)):

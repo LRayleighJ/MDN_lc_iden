@@ -227,6 +227,9 @@ def gen_simu_data(index_batch):
                 c_time = TimeData(datadir=datadir_time,num_point=2000)
                 print("time failure once")
                 continue
+
+        if i_5 == 49:
+            print(str(index_batch*num_bthlc+index_slc), "time-getting failure")
         t_E = (times[-1]-times[0])/8
 
         # for test 
@@ -236,7 +239,7 @@ def gen_simu_data(index_batch):
         t_0 = 0
         count_gen_args = 0
         count_args_bearing = 0
-        for i_4 in range(50):
+        while True:
             try:
                 basis_m = random.uniform(basis_m_min,basis_m_max)
                 u_0, rho, q, s, alpha = generate_random_parameter_set()
@@ -304,10 +307,6 @@ def gen_simu_data(index_batch):
                 if (delta_chi_s_fortest > 10**lgdchis_max)|(delta_chi_s_fortest < 10**lgdchis_min):
                     #print("delta chi square fails once")
                     continue
-
-                args_data_test.append(delta_chi_s_fortest)
-
-                args_data_test.append(singleorbinary)
                 
                 break
             
@@ -317,12 +316,12 @@ def gen_simu_data(index_batch):
                 count_gen_args += 1
                 if count_args_bearing > 5:
                     raise RuntimeError("Noise model crash")
+                    break
                 if count_gen_args > 20:
                     print("Reload noise model: ", count_args_bearing)
                     noi_model = NoiseData(datadir=datadir_noise)
                     count_gen_args = 0
                     count_args_bearing += 1
-                    continue
                 continue
         # original
         ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2,chi^2_test, label]
@@ -330,6 +329,9 @@ def gen_simu_data(index_batch):
         # the data now we need
         ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2, label]
         ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize, chi_array]
+        args_data_test.append(delta_chi_s_fortest)
+        args_data_test.append(singleorbinary)
+        
         data_array=np.array([args_data_test,list(times_fortest),list(d_times[500:500+1000]),list(lc_noi_fortest),list(sig_fortest),list(magnitude_tran(lc[500:500+1000],basis_m)),list(args_minimize_fortest),list(lc_fit_minimize_fortest),list((lc_noi_fortest-lc_fit_minimize_fortest)/sig_fortest)],dtype=object)
         np.save(storedir+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
         # print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())

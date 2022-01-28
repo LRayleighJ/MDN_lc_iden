@@ -279,9 +279,6 @@ def gen_simu_data(index_batch):
 
                 delta_chi_s = chi_s_minimize-chi_s_model 
 
-                args_data.append(delta_chi_s)
-
-                args_data.append(singleorbinary)
                 '''
                 if delta_chi_s < 0:
                     args_data.append(0)
@@ -306,7 +303,10 @@ def gen_simu_data(index_batch):
             
         ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2, label]
         ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize, chi_array]
-
+        args_data.append(delta_chi_s)
+        args_data.append(singleorbinary)
+        if len(args_data)!=10:
+            print(str(index_batch*num_bthlc+index_slc),"missing args")
         data_array=np.array([args_data,list(times),list(d_times),list(lc_noi),list(sig),list(magnitude_tran(lc,basis_m)),list(args_minimize),list(lc_fit_minimize),list((lc_noi-lc_fit_minimize)/sig)],dtype=object)
         np.save(storedir+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
         # print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
