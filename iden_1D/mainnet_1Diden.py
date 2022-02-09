@@ -27,7 +27,7 @@ name_group = name_group_list[np.int(sys.argv[1])]
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"]="4"
 
-trainortest = 0 # 0:test, 1:train
+trainortest = 1 # 0:test, 1:train
 fullorparttest = 2 # 0: part testfig 1: full testfig 2: no fig
 
 # prepare
