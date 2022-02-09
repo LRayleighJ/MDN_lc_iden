@@ -17,6 +17,7 @@ import multiprocessing as mp
 import sys
 
 import netmodule.netGRUiden as lcnet
+import datamodule.datamethod as dm
 
 
 name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
@@ -26,8 +27,8 @@ name_group = name_group_list[np.int(sys.argv[1])]
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"]="4"
 
-trainortest = 1 # 0:test, 1:train
-fullorparttest = 0 # 0: part testfig 1: full testfig
+trainortest = 0 # 0:test, 1:train
+fullorparttest = 2 # 0: part testfig 1: full testfig 2: no fig
 
 # prepare
 
@@ -41,6 +42,7 @@ num_process = 16
 use_gpu = torch.cuda.is_available()
 
 print(os.cpu_count())
+
 # device_ids = [1,2,3,4]
 
 # torch.cuda.set_device("cuda:4,5")
@@ -51,14 +53,14 @@ torch.backends.cudnn.benchmark = True
 ## number of points
 
 ## size of trainingset library
-size_train = 700000
+size_train = 1000000
 ## size of validationset library
-size_val = 70000
+size_val = 100000
 
 ## batch size and epoch
 batch_size_train = 35000
 batch_size_val =10000
-n_epochs = 30
+n_epochs = 50
 learning_rate = 8e-6
 stepsize = 6
 gamma_0 = 0.8
@@ -72,7 +74,7 @@ rootdraw = "/home/zerui603/MDN_lc/iden_1D/testfig/"
 fullrootdraw = "/scratch/zerui603/figtest_iden/"+name_group+"/"
 
 ## arguments for training
-num_test = 70000
+num_test = 100000
 batch_test = 12000
 
 def signlog(x):
@@ -170,6 +172,8 @@ class testdraw:
 
 
 def testnet(datadir=rootval,fullorparttest = fullorparttest):
+    mag_bins = np.linspace(18,22,9)
+    lgdchis_bins = np.linspace(1,5,9)
     # initialize model
     network = lcnet.ResNet()
     criterion = nn.BCELoss()
@@ -182,12 +186,17 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
 
     bchi_s_pre = []
     bchi_s_act = []
-    blabel_pre = []
-    blabel_act = []
+    bm0_pre = []
+    bm0_act = []
+    bchi_s_act_true = []
+    bm0_act_true = []
+
     schi_s_pre = []
     schi_s_act = []
-    slabel_pre = []
-    slabel_act = []
+    sm0_pre = []
+    sm0_act = []
+    schi_s_act_true = []
+    sm0_act_true = []
 
     # file_actual/predicted
     file_bb = []
@@ -200,22 +209,26 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     if num_test%batch_test != 0:
         num_batch += 1
 
+    # making prediction
     for index_batch in range(num_batch):
 
         input_batch = []
         label_batch = []
         chi_s_batch = []
         file_batch = []
+        m0_batch = []
 
 
         for index in range(index_batch*batch_test,np.min([(index_batch+1)*batch_test,num_test])):
             lc_data,args = lcnet.default_loader_fortest(data_root = datadir,posi_lc = index)
+            # [u_0, rho, q, s, alpha, t_E, basis_m, t_0, dchis, label]
             input_batch.append(lc_data)
 
             file_batch.append(index)
 
             dchi_s = args[-2]
             bslabel = args[-1]
+            m0 = args[6]
 
             
             if (bslabel>0.5)&(dchi_s < 20):
@@ -223,6 +236,7 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
             
             label_batch.append(bslabel)
             chi_s_batch.append(dchi_s)
+            m0_batch.append(m0)
         
         input_batch = torch.from_numpy(np.array(input_batch)).float()
         if use_gpu:
@@ -244,9 +258,15 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
 
         if index_batch == 0:
             bchi_s_pre = np.array(chi_s_batch)[np.argwhere(bspre_batch==1).T[0]].copy()
+            bm0_pre = np.array(m0_batch)[np.argwhere(bspre_batch==1).T[0]].copy()
             bchi_s_act = np.array(chi_s_batch)[np.argwhere(label_batch==1).T[0]].copy()
+            bchi_s_act_true = np.array(chi_s_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]].copy()
+            bm0_act = np.array(m0_batch)[np.argwhere(label_batch==1).T[0]].copy()
+            bm0_act_true = np.array(m0_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]].copy()
             schi_s_pre = np.array(chi_s_batch)[np.argwhere(bspre_batch==0).T[0]].copy()
+            sm0_pre = np.array(m0_batch)[np.argwhere(bspre_batch==0).T[0]].copy()
             schi_s_act = np.array(chi_s_batch)[np.argwhere(label_batch==0).T[0]].copy()
+            sm0_act = np.array(m0_batch)[np.argwhere(label_batch==0).T[0]].copy()
 
             file_bb = file_bb_batch.copy()
             file_bs = file_bs_batch.copy()
@@ -256,8 +276,15 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
         else:
             bchi_s_pre = np.append(bchi_s_pre, np.array(chi_s_batch)[np.argwhere(bspre_batch==1).T[0]] )
             bchi_s_act = np.append(bchi_s_act, np.array(chi_s_batch)[np.argwhere(label_batch==1).T[0]] )
+            bchi_s_act_true = np.append(bchi_s_act_true, np.array(chi_s_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]] )
             schi_s_pre = np.append(schi_s_pre, np.array(chi_s_batch)[np.argwhere(bspre_batch==0).T[0]] )
             schi_s_act = np.append(schi_s_act, np.array(chi_s_batch)[np.argwhere(label_batch==0).T[0]] )
+
+            bm0_pre = np.append(bm0_pre, np.array(m0_batch)[np.argwhere(bspre_batch==1).T[0]] )
+            bm0_act = np.append(bm0_act, np.array(m0_batch)[np.argwhere(label_batch==1).T[0]] )
+            bm0_act_true = np.append(bm0_act_true, np.array(m0_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]] )
+            sm0_pre = np.append(sm0_pre, np.array(m0_batch)[np.argwhere(bspre_batch==0).T[0]] )
+            sm0_act = np.append(sm0_act, np.array(m0_batch)[np.argwhere(label_batch==0).T[0]] )
 
             file_bb = np.append(file_bb, file_bb_batch)
             file_bs = np.append(file_bs, file_bs_batch)
@@ -295,9 +322,64 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     plt.savefig("histbs_"+name_group+".png")
     plt.close()
 
+    # test bs bin
+
+    mag_binary, lgdchis_binary, count_mat_binary = dm.gridcount2D(bm0_act,signlog(bchi_s_act),mag_bins,lgdchis_bins)
+    mag_binary_true, lgdchis_binary_true, count_mat_binary_true = dm.gridcount2D(bm0_act_true,signlog(bchi_s_act_true),mag_bins,lgdchis_bins)
+    
+    
+
+    print(np.sum(count_mat_binary))
+    print(np.sum(count_mat_binary_true))
+
+    plt.figure()
+    plt.yticks(range(len(mag_binary)))
+    plt.gca().set_yticklabels(mag_binary)
+    plt.xticks(range(len(lgdchis_binary)))
+    plt.gca().set_xticklabels(lgdchis_binary)
+    plt.imshow(count_mat_binary, cmap=plt.cm.hot_r)
+    plt.colorbar()
+    plt.xlabel("$\log_{10} \Delta \chi^2$(single fitting)")
+    plt.ylabel("$m_0$")
+    plt.title(name_group)
+    plt.savefig("test_binary_distribution_bins_"+name_group+".png")
+    plt.close()
+
+    plt.figure()
+    plt.yticks(range(len(mag_binary)))
+    plt.gca().set_yticklabels(mag_binary)
+    plt.xticks(range(len(lgdchis_binary)))
+    plt.gca().set_xticklabels(lgdchis_binary)
+    plt.imshow(count_mat_binary_true, cmap=plt.cm.hot_r)
+    plt.colorbar()
+    plt.xlabel("$\log_{10} \Delta \chi^2$(single fitting)")
+    plt.ylabel("$m_0$")
+    plt.title(name_group)
+    plt.savefig("test_bb_distribution_bins_"+name_group+".png")
+    plt.close()
+
+    count_mat_binary = np.abs(count_mat_binary-0.5)+0.5
+    rate_mat_binary = count_mat_binary_true/count_mat_binary
+
+    plt.figure()
+    plt.yticks(range(len(mag_binary)))
+    plt.gca().set_yticklabels(mag_binary)
+    plt.xticks(range(len(lgdchis_binary)))
+    plt.gca().set_xticklabels(lgdchis_binary)
+    plt.imshow(rate_mat_binary, cmap=plt.cm.hot_r)
+    plt.colorbar()
+    plt.xlabel("$\log_{10} \Delta \chi^2$(single fitting)")
+    plt.ylabel("$m_0$")
+    plt.title(name_group)
+    plt.savefig("test_binary_rate_bins_"+name_group+".png")
+    plt.close()
+
+    
+
+    
     # test events
 
-    testsize=100
+    testsize=50
     label_list = ["bb","bs","sb","ss"]
     filename_list = [file_bb,file_bs,file_sb,file_ss]
 
@@ -442,7 +524,7 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
                 plt.close()
 
         return 0
-    elif fullorparttest == 1:
+    elif fullorparttest >= 1:
         return filename_list
 
 def training():

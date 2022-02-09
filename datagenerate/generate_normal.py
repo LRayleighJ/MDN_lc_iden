@@ -15,7 +15,7 @@ from scipy.optimize import curve_fit
 name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
 name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
 lgq_list = [0.,-0.5,-1.,-1.5,-2.,-2.5,-3.,-3.5]
-name_group = name_group_list[np.int(sys.argv[1])]
+name_group = name_group_test_list[np.int(sys.argv[1])]
 lgq_max = lgq_list[np.int(sys.argv[1])]
 
 # 
@@ -29,7 +29,7 @@ storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"/"
 singleorbinary = np.int(sys.argv[2]) # 0:single 1:binary, else: error
 
 num_echo = np.int(1-np.int(sys.argv[2]))
-num_batch = 10000
+num_batch = 1000
 num_bthlc = 50
 num_process = 20
 
@@ -231,7 +231,7 @@ def gen_simu_data(index_batch):
         t_0 = 0
         count_gen_args = 0
         count_args_bearing = 0
-        while True:
+        for i_4 in range(200):
             try:
                 basis_m = np.min([20+2*np.random.randn(),22])
                 basis_m = np.max([18,basis_m])
@@ -277,8 +277,6 @@ def gen_simu_data(index_batch):
                     continue
 
                 # print("Fitting was successful? {:}".format(result.success))
-                if not result.success:
-                    print(result.message)
                 # print("Function evaluations: {:}".format(result.nfev))
                 if isinstance(result.fun, np.ndarray):
                     if result.fun.ndim == 0:
@@ -338,6 +336,7 @@ if __name__=="__main__":
     starttime = datetime.datetime.now()
     print("starttime:",starttime)
     print("cpu_count:",os.cpu_count())
+    print(name_group, sys.argv[-1])
 
     with mp.Pool(num_process) as p:
         p.map(gen_simu_data, range(u,u+num_batch))
@@ -345,3 +344,4 @@ if __name__=="__main__":
     endtime = datetime.datetime.now()
     print("end time:",endtime)
     print("total:",endtime - starttime) 
+    print(name_group, sys.argv[-1], "has finished")
