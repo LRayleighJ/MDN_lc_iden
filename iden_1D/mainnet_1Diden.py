@@ -60,10 +60,10 @@ size_val = 100000
 ## batch size and epoch
 batch_size_train = 35000
 batch_size_val =10000
-n_epochs = 50
-learning_rate = 8e-6
+n_epochs = 30
+learning_rate = 1e-5
 stepsize = 6
-gamma_0 = 0.8
+gamma_0 = 0.7
 momentum = 0.5
 
 ## path of trainingset and validationset

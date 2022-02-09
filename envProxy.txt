@@ -1,3 +1,0 @@
-HTTP_PROXY=http://jupiter:3128
-FTP_PROXY=http://jupiter:3128
-HTTPS_PROXY=http://jupiter:3128
