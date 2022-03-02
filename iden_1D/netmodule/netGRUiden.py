@@ -179,10 +179,11 @@ class ResNet(nn.Module):
             hidden_size=3,
             num_layers=2,
             batch_first=True,
+            bidirectional=True
         )
         # (batch,1000,3) -> (batch,1000,3) -> (batch,3000) -> 
-        self.rnnout1 = nn.Linear(3000,1500)
-        self.rnnout2 = nn.Linear(1500,1000)
+        self.rnnout1 = nn.Linear(6000,2000)
+        self.rnnout2 = nn.Linear(2000,1000)
         
         self.pre = nn.Sequential(
             nn.Conv1d(1,64,7,2,3,bias=False),
@@ -214,23 +215,24 @@ class ResNet(nn.Module):
         return nn.Sequential(*self.layers)
 
     def forward(self, x):
+        # print(x.shape," input")
         x = x.view(-1,1000,3)
-        # print(x.shape)
+        # print(x.shape," 1")
         self.rnn.flatten_parameters()
         x,_ = self.rnn(x,None)
         
-        # print(x.shape)
-        x = x.contiguous().view(-1,1,3000)
+        # print(x.shape," 2")
+        x = x.contiguous().view(-1,1,6000)
         x = self.rnnout1(x)
         x = self.rnnout2(x)
-        # print(x.shape)
+        # print(x.shape," 3")
         # x = x.view(-1,1,1000)
-        # print(x.shape)
+        # print(x.shape," 4")
         x = self.pre(x)
         x = self.body(x)
-        # print(x.shape)
+        # print(x.shape," 5")
         x = x.view(-1,32*512)
-        # print(x.shape)
+        # print(x.shape," 6")
         x = self.fc1(x)
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc2(x)
@@ -238,6 +240,7 @@ class ResNet(nn.Module):
         x = self.fc3(x)
         x = F.dropout(x, p=0.25, training=self.training)
         x = self.fc4(x)
+        # print(x.shape," output")
         
         return self.outfunc(x)
 
@@ -273,8 +276,8 @@ class Loss_fn(nn.Module):
         super().__init__()
     def forward(self,y,pi1,pi2,pi3,pi4,mu1,mu2,mu3,mu4,sigma1,sigma2,sigma3,sigma4):
         mixture1 = torch.distributions.normal.Normal(mu1, sigma1)
-        # print(y.shape)
-        # print(y.t()[0].t().shape)
+        # # print(y.shape)
+        # # print(y.t()[0].t().shape)
         log_prob1 = mixture1.log_prob(y.t()[0].t().unsqueeze(-1))
         weighted_logprob1 = log_prob1 + pi1
         log_sum1 = torch.logsumexp(weighted_logprob1, dim=-1)

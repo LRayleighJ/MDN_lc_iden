@@ -19,15 +19,23 @@ import sys
 import netmodule.netGRUiden as lcnet
 import datamodule.datamethod as dm
 
+num_code = np.int(sys.argv[1])
+forbidden_numlist = []# [1,2,3,4,5,6,7]
+
+for forbidden_num in forbidden_numlist:
+    if num_code == forbidden_num:
+        exit()
 
 name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
 name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
-name_group = name_group_list[np.int(sys.argv[1])]
+name_group = name_group_list[num_code]
+
+print("Name Group: ",name_group)
 
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"]="4"
 
-trainortest = 1 # 0:test, 1:train
+trainortest = 0 # 0:test, 1:train
 fullorparttest = 2 # 0: part testfig 1: full testfig 2: no fig
 
 # prepare
@@ -60,10 +68,10 @@ size_val = 100000
 ## batch size and epoch
 batch_size_train = 35000
 batch_size_val =10000
-n_epochs = 30
-learning_rate = 1e-5
-stepsize = 6
-gamma_0 = 0.7
+n_epochs = 80
+learning_rate = 8e-6 # 4e-6
+stepsize = 15# 7
+gamma_0 = 0.75
 momentum = 0.5
 
 ## path of trainingset and validationset
@@ -75,7 +83,7 @@ fullrootdraw = "/scratch/zerui603/figtest_iden/"+name_group+"/"
 
 ## arguments for training
 num_test = 100000
-batch_test = 12000
+batch_test = 7500
 
 def signlog(x):
     return np.log10(np.abs(x))
@@ -231,7 +239,7 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
             m0 = args[6]
 
             
-            if (bslabel>0.5)&(dchi_s < 20):
+            if (bslabel>0.5)&(dchi_s < 10):
                 bslabel = 0
             
             label_batch.append(bslabel)
@@ -600,7 +608,7 @@ def training():
             torch.save(network.state_dict(),path_params+preload_Netmodel)
             print("netparams have been saved once")
         if (epoch+1)%20 == 0:
-            testnet(fullorparttest = 0)
+            testnet(fullorparttest = fullorparttest)
             print("Examination have been executed once")
 
         gc.collect()
@@ -669,8 +677,8 @@ def training():
         plt.figure(figsize=(18,24))
         plt.subplot(411)
         x = np.linspace(1,epoch+1,len(loss_figure))
-        plt.plot(x, loss_figure,label = "training loss log-likehood")
-        plt.plot(x, val_loss_figure,label = "val loss log-likehood")
+        plt.plot(x, loss_figure,label = "training loss log-likelihood")
+        plt.plot(x, val_loss_figure,label = "val loss log-likelihood")
         plt.title("loss-epoch")
         plt.xlabel("epoch")
         plt.ylabel("loss BCELoss")

@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -N net_iden_lc
-#PBS -lselect=1:ncpus=20:mem=384gb:ngpus=4
+#PBS -lselect=1:ncpus=20:mem=32gb:ngpus=2
 #PBS -o /home/zerui603/MDN_lc/log/
 #PBS -e /home/zerui603/MDN_lc/log/
 cd $PBS_O_WORKDIR
@@ -21,6 +21,6 @@ unset __conda_setup
 # <<< conda initialize <<<
 conda activate PytorchCd11
 for i in {0..7};do                       
-    CUDA_VISIBLE_DEVICES=6,7,8,9 python /home/zerui603/MDN_lc/iden_1D/mainnet_1Diden.py $i                               
+    CUDA_VISIBLE_DEVICES=4 python /home/zerui603/MDN_lc/iden_1D/mainnet_1Diden.py $i                               
 done 
 conda deactivate
