@@ -100,7 +100,7 @@ def default_loader_fortest(data_root,posi_lc,judge_train=0):
     
     labels = np.array(datadir[0],dtype=np.float64)
 
-    lc_mag = np.array(datadir[8],dtype=np.float64)
+    lc_mag = np.array(datadir[8],dtype=np.float64)**2
     # lc_mag = np.mean(np.sort(lc_mag)[-50:])-np.array(lc_mag)
     lc_mag = lc_mag.reshape((1000,1))
     lc_mag = renormal_data(lc_mag)

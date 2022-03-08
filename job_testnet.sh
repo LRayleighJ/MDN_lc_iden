@@ -19,7 +19,8 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
-conda activate PyTorch-1.9.0
-
-CUDA_VISIBLE_DEVICES=6,7,8,9 python /home/zerui603/MDN_lc/iden_1D/testbsbins.py
+conda activate PytorchCd11
+for i in {0..7};do                       
+    CUDA_VISIBLE_DEVICES=0 python /home/zerui603/MDN_lc_iden/iden_1D/test_realKMT.py $i                               
+done 
 conda deactivate

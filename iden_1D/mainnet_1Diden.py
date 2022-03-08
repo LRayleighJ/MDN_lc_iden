@@ -20,7 +20,7 @@ import netmodule.netGRUiden as lcnet
 import datamodule.datamethod as dm
 
 num_code = np.int(sys.argv[1])
-forbidden_numlist = []# [1,2,3,4,5,6,7]
+forbidden_numlist = [0,1,2,3,4,5,6,7]
 
 for forbidden_num in forbidden_numlist:
     if num_code == forbidden_num:
