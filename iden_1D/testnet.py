@@ -13,107 +13,149 @@ import os
 from prefetch_generator import BackgroundGenerator
 import pickle
 import gc 
-import MulensModel as mm
+import multiprocessing as mp
+import sys
 
 import netmodule.netGRUiden as lcnet
+import datamodule.datamethod as dm
 
-# initialize preload netparams
-reload = 1
-preload_Netmodel = "/home/zerui603/MDN_lc/GRUresnet_iden.pkl"
+num_code = np.int(sys.argv[1])
+forbidden_numlist = []
 
-# initialize the storage path
-rootval = "/scratch/zerui603/KMTiden_1d/val/"
-samplepath = "/home/zerui603/MDN_lc/iden_1D/testnetfig/"
+for forbidden_num in forbidden_numlist:
+    if num_code == forbidden_num:
+        exit()
 
+name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
+name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
+name_group = name_group_list[num_code]
+
+print("Name Group: ",name_group)
+
+threshold_classi = [0.8787878787878789, 0.787878787878788, 0.888888888888889, 0.888888888888889, 0.888888888888889, 0.9090909090909092, 0.8080808080808082, 0.8686868686868687]
+thres_net_test = threshold_classi[num_code]
+
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"]="4"
+
+trainortest = 0 # 0:test, 1:train
+fullorparttest = 2 # 0: part testfig 1: full testfig 2: no fig
+
+# prepare
+
+# reload
+reload = 0
+preload_Netmodel = "GRUresnet_iden_res_"+name_group+".pkl"
+path_params = "/scratch/zerui603/netparams/"
+num_process = 16
 
 # initialize GPU
 use_gpu = torch.cuda.is_available()
-N_gpu = torch.cuda.device_count()
-device_ids = range(N_gpu)
+
+print(os.cpu_count())
+
+# device_ids = [1,2,3,4]
+
+# torch.cuda.set_device("cuda:4,5")
+
 torch.backends.cudnn.benchmark = True
 
-# initialize network
-network = lcnet.ResNet()
-if use_gpu:
-    network = network.cuda()
-    network = nn.DataParallel(network)
-if reload == 1:
-    network.load_state_dict(torch.load(preload_Netmodel))
+# define parameters
+## number of points
 
+## size of trainingset library
+size_train = 1000000
+## size of validationset library
+size_val = 100000
 
-# test single lc
-# initialize the size of valsets
-test_size = 2000
-total_size = 60000
+## batch size and epoch
+batch_size_train = 35000
+batch_size_val =10000
+n_epochs = 25
+learning_rate_list = [8e-6,8e-7,1.5e-6,1e-6,1e-6,1e-6,2e-6,2e-6]#[0,1,2,3,4,5,6,7]
+learning_rate = learning_rate_list[num_code] # 4e-6
+stepsize = 5# 7
+gamma_0 = 0.7
+momentum = 0.5
 
-filelists = os.listdir(rootval)
-random.shuffle(filelists)
+## path of trainingset and validationset
 
-for index_sample in range(test_size):
-    datadir = list(np.load(rootval+filelists[index_sample], allow_pickle=True))
-    labels = np.array(datadir[0],dtype=np.float64)
+rootdir = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"/"
+rootval = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"test/"
+rootdraw = "/home/zerui603/MDN_lc/iden_1D/testfig/"
+fullrootdraw = "/scratch/zerui603/figtest_iden/"+name_group+"/"
 
-    lc_mag = np.array(datadir[3],dtype=np.float64)
-    lc_mag = np.mean(np.sort(lc_mag)[-50:])-np.array(lc_mag)
-    lc_mag_rnn = lc_mag.reshape((1000,1))
-    lc_time_ori = np.array(datadir[1],dtype=np.float64)
-    lc_time = (lc_time_ori-lc_time_ori[0])/(lc_time_ori[-1]-lc_time_ori[0])
-    lc_time_rnn = lc_time.reshape((1000,1))
-    lc_sig = np.array(datadir[4],dtype=np.float64)
-    lc_sig_rnn = lc_sig.reshape((1000,1))*100
+## arguments for training
+num_test = 100000
+batch_test = 7500
 
-    data_input = np.concatenate((lc_mag_rnn,lc_time_rnn,lc_sig_rnn),axis=1)
+def signlog(x):
+    return np.log10(np.abs(x))
 
-    lg_q = np.log10(labels[2])
-    lg_s = np.log10(labels[3])
-    alpha = labels[4]
-    u0 = labels[0]
-
-    
-
-    label = np.int(labels[-1])
-
-    lc_data = np.array([data_input])
-
-    print(lc_data.shape)
-    print(label)
-
-
-    inputs = torch.from_numpy(np.array([lc_data])).float()
-
+def testnet(datadir=rootval,fullorparttest = fullorparttest):
+    network = lcnet.ResNet()
+    criterion = nn.BCELoss()
     if use_gpu:
-        inputs = inputs.cuda()
-    network.eval()
-    outputs = network(inputs).detach().cpu().numpy()[0]
-    print(outputs)
-    prediction = np.int(np.around(outputs[0]))
-    plt.figure(figsize=(20,9))
-    plt.subplot(121)
-    plt.errorbar(lc_time_ori,lc_mag,yerr=lc_sig,fmt='o',capsize=2,elinewidth=1,ms=3,alpha=0.7,zorder=0)
-    
-    # plt.title("lg q=%.3f,lg s=%.3f,u0=%.3f,alpha=%.1f"%(lg_q,lg_s,labels[0],labels[4]))
-    
-    plt.subplot(122)
-    ## trajectory
-    ## Order of args: [u_0, rho, q, s, alpha, t_E]
-    bl_model = mm.Model({'t_0': 0, 'u_0': labels[0],'t_E': labels[5], 'rho': labels[1], 'q': labels[2], 's': labels[3],'alpha': labels[4]})
-    bl_model.set_default_magnification_method("VBBL")
-    
-    
-    caustic = mm.Caustics(s=labels[3], q=labels[2])
-    X_caustic,Y_caustic = caustic.get_caustics(n_points=2000)
+        criterion = criterion.cuda()
+        network = nn.DataParallel(network).cuda()
 
-    trace_x = -np.sin(labels[4]*np.pi/180)*labels[0]+lc_time_ori/labels[5]*np.cos(labels[4]*np.pi/180)
-    trace_y = np.cos(labels[4]*np.pi/180)*labels[0]+lc_time_ori/labels[5]*np.sin(labels[4]*np.pi/180)
-    
-    plt.scatter(X_caustic,Y_caustic,s=1,c="b")
-    plt.plot(trace_x,trace_y,c="g")
-    plt.xlabel(r"$\theta_x$")
-    plt.ylabel(r"$\theta_y$")
-    plt.axis("scaled")
-    plt.grid()
-    plt.suptitle(r"$\log_{10} q$=%.3f,$\log_{10} s=$%.3f,$u_0=$%.3f,$\alpha=$%.1f,predicted=%d,label=%d"%(lg_q,lg_s,labels[0],labels[4],prediction,label),fontsize=30)
-    plt.savefig(samplepath+str(index_sample)+"_lc.png")
+    network.load_state_dict(torch.load(path_params+preload_Netmodel))
+
+    num_batch = num_test//batch_test
+
+    if num_test%batch_test != 0:
+        num_batch += 1
+
+    # making prediction
+    structure_data = []
+    m0_data = []
+
+    for index_batch in range(num_batch):
+
+        input_batch = []
+        m0_batch = []
+        structure_batch = []
+
+        for index in range(index_batch*batch_test,np.min([(index_batch+1)*batch_test,num_test])):
+            lc_data,args,extra_data = lcnet.default_loader_fortest(data_root = datadir,posi_lc = index,extra_index = [4,5,7])
+            # [u_0, rho, q, s, alpha, t_E, basis_m, t_0, dchis, label]
+
+            input_batch.append(lc_data)
+            extra_data = np.array(extra_data)
+            lc_sigma = extra_data[0]
+            lc_binary_nonoi = extra_data[1]
+            lc_single_nonoi = extra_data[2]
+            dchi_s = args[-2]
+            bslabel = args[-1]
+            m0 = args[6]
+
+            if (bslabel>0.5)&(dchi_s < 10):
+                bslabel = 0
+
+            structure_batch.append(np.sum((lc_binary_nonoi-lc_single_nonoi)**2))
+            m0_batch.append(m0)
+        
+        input_batch = torch.from_numpy(np.array(input_batch)).float()
+        if use_gpu:
+            input_batch = input_batch.cuda()
+        
+        network.eval()
+        output_batch = network(input_batch).detach().cpu().numpy()
+
+
+        bspre_batch = output_batch.T[0]
+
+        structure_data = np.append(structure_data,structure_batch)
+        m0_data = np.append(m0_data,m0_batch)
+
+    plt.figure(figsize=[20,15])
+    plt.scatter(m0_data,np.log10(structure_data),s=1,alpha=0.2)
+    plt.savefig("structure_m0_"+name_group+".png")
     plt.close()
+        
 
-    # print("lightcurve %d has finished"%(index_sample,),datetime.datetime.now())
+        
+
+
+if __name__=="__main__":
+    testnet()

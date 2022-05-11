@@ -13,10 +13,10 @@ from scipy.optimize import curve_fit
 
 # lists
 name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
-name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
+name_group_test_list = ["00to05val","05to10val","10to15val","15to20val","20to25val","25to30val","30to35val","35to40val"]
 lgq_list = [0.,-0.5,-1.,-1.5,-2.,-2.5,-3.,-3.5]
-name_group = name_group_test_list[np.int(sys.argv[1])]
-lgq_max = lgq_list[np.int(sys.argv[1])]
+name_group = "mixval"# name_group_test_list[np.int(sys.argv[1])]
+lgq_max = 0# lgq_list[np.int(sys.argv[1])]
 
 # 
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
@@ -26,9 +26,9 @@ storedir = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"/"
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
 
-singleorbinary = np.int(sys.argv[2]) # 0:single 1:binary, else: error
+singleorbinary = np.int(sys.argv[1]) # 0:single 1:binary, else: error
 
-num_echo = np.int(1-np.int(sys.argv[2]))
+num_echo = np.int(1-np.int(sys.argv[1]))
 num_batch = 1000
 num_bthlc = 50
 num_process = 20
@@ -36,7 +36,7 @@ num_process = 20
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
     rho = 10.**random.uniform(-4, -2) # log-flat between 1e-4 and 1e-2
-    q = 10.**random.uniform(lgq_max-0.5, lgq_max) # including both planetary & binary events
+    q = 10.**random.uniform(-4,0) # including both planetary & binary events
     s = 10.**random.uniform(np.log10(0.3), np.log10(3))
     alpha = random.uniform(0, 360) # 0-360 degrees
     ## use Penny (2014) parameterization for small-q binaries ##
@@ -233,7 +233,7 @@ def gen_simu_data(index_batch):
         count_args_bearing = 0
         for i_4 in range(200):
             try:
-                basis_m = np.min([20+2*np.random.randn(),22])
+                basis_m = np.min([20+1*np.random.randn(),22])
                 basis_m = np.max([18,basis_m])
                 u_0, rho, q, s, alpha = generate_random_parameter_set()
                 if u_0 == 0:

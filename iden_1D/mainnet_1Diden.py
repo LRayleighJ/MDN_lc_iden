@@ -19,18 +19,21 @@ import sys
 import netmodule.netGRUiden as lcnet
 import datamodule.datamethod as dm
 
-num_code = np.int(sys.argv[1])
-forbidden_numlist = [0,1,2,3,4,5,6,7]
-
+# num_code = np.int(sys.argv[1])
+forbidden_numlist = []
+'''
 for forbidden_num in forbidden_numlist:
     if num_code == forbidden_num:
         exit()
-
-name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
-name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
-name_group = name_group_list[num_code]
+'''
+# name_group_list = ["00to05","05to10","10to15","15to20","20to25","25to30","30to35","35to40"]
+# name_group_test_list = ["00to05test","05to10test","10to15test","15to20test","20to25test","25to30test","30to35test","35to40test"]
+name_group = "mix"# name_group_list[num_code]
 
 print("Name Group: ",name_group)
+
+# threshold_classi = [0.8787878787878789, 0.787878787878788, 0.888888888888889, 0.888888888888889, 0.888888888888889, 0.9090909090909092, 0.8080808080808082, 0.8686868686868687]
+thres_net_test = 0.5 # threshold_classi[num_code]
 
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"]="4"
@@ -68,16 +71,17 @@ size_val = 100000
 ## batch size and epoch
 batch_size_train = 35000
 batch_size_val =10000
-n_epochs = 80
-learning_rate = 8e-6 # 4e-6
-stepsize = 15# 7
-gamma_0 = 0.75
+n_epochs = 100
+learning_rate_list = [8e-6,8e-7,1.5e-6,1e-6,1e-6,1e-6,2e-6,2e-6]#[0,1,2,3,4,5,6,7]
+learning_rate = 4e-6#learning_rate_list[num_code] # 4e-6
+stepsize = 10# 7
+gamma_0 = 0.7
 momentum = 0.5
 
 ## path of trainingset and validationset
 
 rootdir = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"/"
-rootval = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"test/"
+rootval = "/scratch/zerui603/KMT_simu_lowratio/qseries/"+name_group+"val/"
 rootdraw = "/home/zerui603/MDN_lc/iden_1D/testfig/"
 fullrootdraw = "/scratch/zerui603/figtest_iden/"+name_group+"/"
 
@@ -180,8 +184,8 @@ class testdraw:
 
 
 def testnet(datadir=rootval,fullorparttest = fullorparttest):
-    mag_bins = np.linspace(18,22,9)
-    lgdchis_bins = np.linspace(1,5,9)
+    mag_bins = np.linspace(16,20,17)
+    # lgdchis_bins = np.linspace(1.5,3.5,17)
     # initialize model
     network = lcnet.ResNet()
     criterion = nn.BCELoss()
@@ -191,7 +195,8 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
         network = nn.DataParallel(network).cuda()
 
     network.load_state_dict(torch.load(path_params+preload_Netmodel))
-
+    b_pre = []
+    s_pre = []
     bchi_s_pre = []
     bchi_s_act = []
     bm0_pre = []
@@ -205,6 +210,9 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     sm0_act = []
     schi_s_act_true = []
     sm0_act_true = []
+
+    pre_total = []
+    chis_total = []
 
     # file_actual/predicted
     file_bb = []
@@ -226,9 +234,12 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
         file_batch = []
         m0_batch = []
 
+        # pre_total_batch = []
+        # chis_total_batch = []
+
 
         for index in range(index_batch*batch_test,np.min([(index_batch+1)*batch_test,num_test])):
-            lc_data,args = lcnet.default_loader_fortest(data_root = datadir,posi_lc = index)
+            lc_data,args,_ = lcnet.default_loader_fortest(data_root = datadir,posi_lc = index)
             # [u_0, rho, q, s, alpha, t_E, basis_m, t_0, dchis, label]
             input_batch.append(lc_data)
 
@@ -254,27 +265,34 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
         output_batch = network(input_batch).detach().cpu().numpy()
 
 
-        bspre_batch = np.around(output_batch.T[0])
+        bspre_batch = output_batch.T[0]
         label_batch = np.array(label_batch).astype(np.int)
+        b_pre_batch = bspre_batch[label_batch>0.5]
+        s_pre_batch = bspre_batch[label_batch<0.5]
 
         file_batch = np.array(file_batch)
 
-        file_bb_batch = file_batch[(label_batch>0.5)&(bspre_batch>0.5)]
-        file_bs_batch = file_batch[(label_batch>0.5)&(bspre_batch<0.5)]
-        file_sb_batch = file_batch[(label_batch<0.5)&(bspre_batch>0.5)]
-        file_ss_batch = file_batch[(label_batch<0.5)&(bspre_batch<0.5)] 
+        file_bb_batch = file_batch[(label_batch>0.5)&(bspre_batch>=thres_net_test)]
+        file_bs_batch = file_batch[(label_batch>0.5)&(bspre_batch<thres_net_test)]
+        file_sb_batch = file_batch[(label_batch<0.5)&(bspre_batch>thres_net_test)]
+        file_ss_batch = file_batch[(label_batch<0.5)&(bspre_batch<=thres_net_test)]  
 
         if index_batch == 0:
-            bchi_s_pre = np.array(chi_s_batch)[np.argwhere(bspre_batch==1).T[0]].copy()
-            bm0_pre = np.array(m0_batch)[np.argwhere(bspre_batch==1).T[0]].copy()
-            bchi_s_act = np.array(chi_s_batch)[np.argwhere(label_batch==1).T[0]].copy()
-            bchi_s_act_true = np.array(chi_s_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]].copy()
-            bm0_act = np.array(m0_batch)[np.argwhere(label_batch==1).T[0]].copy()
-            bm0_act_true = np.array(m0_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]].copy()
-            schi_s_pre = np.array(chi_s_batch)[np.argwhere(bspre_batch==0).T[0]].copy()
-            sm0_pre = np.array(m0_batch)[np.argwhere(bspre_batch==0).T[0]].copy()
-            schi_s_act = np.array(chi_s_batch)[np.argwhere(label_batch==0).T[0]].copy()
-            sm0_act = np.array(m0_batch)[np.argwhere(label_batch==0).T[0]].copy()
+            b_pre = b_pre_batch.copy()
+            s_pre = s_pre_batch.copy()
+            bchi_s_pre = np.array(chi_s_batch)[np.argwhere(bspre_batch>=thres_net_test).T[0]].copy()
+            bm0_pre = np.array(m0_batch)[np.argwhere(bspre_batch>=thres_net_test).T[0]].copy()
+            bchi_s_act = np.array(chi_s_batch)[np.argwhere(label_batch>=0.5).T[0]].copy()
+            bchi_s_act_true = np.array(chi_s_batch)[np.argwhere((label_batch>=0.5)&(bspre_batch>=thres_net_test)).T[0]].copy()
+            bm0_act = np.array(m0_batch)[np.argwhere(label_batch>=0.5).T[0]].copy()
+            bm0_act_true = np.array(m0_batch)[np.argwhere((label_batch>=0.5)&(bspre_batch>=thres_net_test)).T[0]].copy()
+            schi_s_pre = np.array(chi_s_batch)[np.argwhere(bspre_batch<thres_net_test).T[0]].copy()
+            sm0_pre = np.array(m0_batch)[np.argwhere(bspre_batch<thres_net_test).T[0]].copy()
+            schi_s_act = np.array(chi_s_batch)[np.argwhere(label_batch<0.5).T[0]].copy()
+            sm0_act = np.array(m0_batch)[np.argwhere(label_batch<0.5).T[0]].copy()
+            
+            chis_total = np.array(chi_s_batch).copy()
+            pre_total = np.array(bspre_batch).copy()
 
             file_bb = file_bb_batch.copy()
             file_bs = file_bs_batch.copy()
@@ -282,17 +300,22 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
             file_ss = file_ss_batch.copy()
 
         else:
-            bchi_s_pre = np.append(bchi_s_pre, np.array(chi_s_batch)[np.argwhere(bspre_batch==1).T[0]] )
-            bchi_s_act = np.append(bchi_s_act, np.array(chi_s_batch)[np.argwhere(label_batch==1).T[0]] )
-            bchi_s_act_true = np.append(bchi_s_act_true, np.array(chi_s_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]] )
-            schi_s_pre = np.append(schi_s_pre, np.array(chi_s_batch)[np.argwhere(bspre_batch==0).T[0]] )
-            schi_s_act = np.append(schi_s_act, np.array(chi_s_batch)[np.argwhere(label_batch==0).T[0]] )
+            b_pre = np.append(b_pre,b_pre_batch)
+            s_pre = np.append(s_pre,s_pre_batch)
+            bchi_s_pre = np.append(bchi_s_pre, np.array(chi_s_batch)[np.argwhere(bspre_batch>=thres_net_test).T[0]] )
+            bchi_s_act = np.append(bchi_s_act, np.array(chi_s_batch)[np.argwhere(label_batch>=0.5).T[0]] )
+            bchi_s_act_true = np.append(bchi_s_act_true, np.array(chi_s_batch)[np.argwhere((label_batch>=0.5)&(bspre_batch>=thres_net_test)).T[0]] )
+            schi_s_pre = np.append(schi_s_pre, np.array(chi_s_batch)[np.argwhere(bspre_batch<thres_net_test).T[0]] )
+            schi_s_act = np.append(schi_s_act, np.array(chi_s_batch)[np.argwhere(label_batch<0.5).T[0]] )
 
-            bm0_pre = np.append(bm0_pre, np.array(m0_batch)[np.argwhere(bspre_batch==1).T[0]] )
-            bm0_act = np.append(bm0_act, np.array(m0_batch)[np.argwhere(label_batch==1).T[0]] )
-            bm0_act_true = np.append(bm0_act_true, np.array(m0_batch)[np.argwhere((label_batch==1)&(bspre_batch==1)).T[0]] )
-            sm0_pre = np.append(sm0_pre, np.array(m0_batch)[np.argwhere(bspre_batch==0).T[0]] )
-            sm0_act = np.append(sm0_act, np.array(m0_batch)[np.argwhere(label_batch==0).T[0]] )
+            bm0_pre = np.append(bm0_pre, np.array(m0_batch)[np.argwhere(bspre_batch>=thres_net_test).T[0]] )
+            bm0_act = np.append(bm0_act, np.array(m0_batch)[np.argwhere(label_batch>=0.5).T[0]] )
+            bm0_act_true = np.append(bm0_act_true, np.array(m0_batch)[np.argwhere((label_batch>=0.5)&(bspre_batch>=thres_net_test)).T[0]] )
+            sm0_pre = np.append(sm0_pre, np.array(m0_batch)[np.argwhere(bspre_batch<thres_net_test).T[0]] )
+            sm0_act = np.append(sm0_act, np.array(m0_batch)[np.argwhere(label_batch<0.5).T[0]] )
+
+            chis_total = np.append(chis_total, chi_s_batch)
+            pre_total = np.append(pre_total, bspre_batch)
 
             file_bb = np.append(file_bb, file_bb_batch)
             file_bs = np.append(file_bs, file_bs_batch)
@@ -302,35 +325,54 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     print(len(schi_s_act))
     print(len(bchi_s_pre))
     print(len(schi_s_pre))
-    plt.figure(figsize=[7,20])
-    plt.subplot(511)
-    plt.hist(signlog(bchi_s_act),bins=1000,label="actual binary",alpha=0.5)
-    plt.hist(signlog(schi_s_act),bins=1000,label="actual single",alpha=0.5)
-    plt.hist(signlog(bchi_s_pre),bins=1000,label="predicted binary",alpha=0.5)
-    plt.hist(signlog(schi_s_pre),bins=1000,label="predicted single",alpha=0.5)
+
+    print(len(file_bb),",",len(file_bs),",",len(file_sb),",",len(file_ss))
+
+    b_pre_distribution,_ = np.histogram(b_pre,bins=np.linspace(0,1,50),range=(0,1))
+    s_pre_distribution,_ = np.histogram(s_pre,bins=np.linspace(0,1,50),range=(0,1))
+
+    np.save("bspre_distribution_"+name_group+".npy",np.array([b_pre_distribution,s_pre_distribution]))
+    np.save("bspre_chis_"+name_group+".npy",np.array([pre_total,chis_total]))
+
+    # size of bin
+    ba_bins = 50
+    stepsize_bin = (np.max(signlog(bchi_s_act))-np.min(signlog(bchi_s_act)))/ba_bins
+    sa_bins = np.int((np.max(signlog(schi_s_act))-np.min(signlog(schi_s_act)))//stepsize_bin)
+    bp_bins = np.int((np.max(signlog(bchi_s_pre))-np.min(signlog(bchi_s_pre)))//stepsize_bin)
+    sp_bins = np.int((np.max(signlog(schi_s_pre))-np.min(signlog(schi_s_pre)))//stepsize_bin)
+
+    plt.figure(figsize=[7,5])
+
+    plt.hist(signlog(bchi_s_act),bins=ba_bins,label="actual binary",histtype="step")
+    plt.hist(signlog(schi_s_act),bins=sa_bins,label="actual single",histtype="step")
+    plt.hist(signlog(bchi_s_pre),bins=bp_bins,label="predicted binary",histtype="step")
+    plt.hist(signlog(schi_s_pre),bins=sp_bins,label="predicted single",histtype="step")
 
     plt.xlabel("$\log_{10} |\Delta \chi^2|$")
-    plt.legend()
-    plt.subplot(512)
-    plt.hist(signlog(bchi_s_act),bins=1000,label="actual binary",alpha=0.5)
-    plt.legend()
-    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
-    plt.subplot(513)
-    plt.hist(signlog(schi_s_act),bins=1000,label="actual single",alpha=0.5)
-    plt.legend()
-    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
-    plt.subplot(514)
-    plt.hist(signlog(bchi_s_pre),bins=1000,label="predicted binary",alpha=0.5)
-    plt.legend()
-    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
-    plt.subplot(515)
-    plt.hist(signlog(schi_s_pre),bins=1000,label="predicted single",alpha=0.5)
-    plt.legend()
-    plt.xlabel("$\log_{10} |\Delta \chi^2|$")
+    # plt.legend()
+    # plt.title("range of $\log_{10}q$: (-%s.%s, -%s.%s )"%(name_group[-2],name_group[-1],name_group[0],name_group[1]),fontsize=30)
     plt.savefig("histbs_"+name_group+".png")
     plt.close()
+    data_hist_chis = np.array([signlog(bchi_s_act),signlog(schi_s_act),signlog(bchi_s_pre),signlog(schi_s_pre)],dtype=object)
+    np.save("/scratch/zerui603/data_hist_chis/data_chis_hist"+name_group+".npy",data_hist_chis)
+
+    del data_hist_chis
 
     # test bs bin
+
+    lgdchis_bins = np.ones(mag_bins.shape)
+
+    lgbchi_s_act_sort = np.sort(signlog(bchi_s_act))
+
+    rate_testhistbins = 0.5
+
+    for i in range(len(lgdchis_bins)):
+        delta = np.int(rate_testhistbins*len(lgbchi_s_act_sort)/len(lgdchis_bins))
+        lgdchis_bins[i] = lgbchi_s_act_sort[i*delta]
+    
+    lgdchis_bins[0] = 1
+    lgdchis_bins[-1] = lgbchi_s_act_sort[-1]
+
 
     mag_binary, lgdchis_binary, count_mat_binary = dm.gridcount2D(bm0_act,signlog(bchi_s_act),mag_bins,lgdchis_bins)
     mag_binary_true, lgdchis_binary_true, count_mat_binary_true = dm.gridcount2D(bm0_act_true,signlog(bchi_s_act_true),mag_bins,lgdchis_bins)
@@ -349,7 +391,7 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     plt.colorbar()
     plt.xlabel("$\log_{10} \Delta \chi^2$(single fitting)")
     plt.ylabel("$m_0$")
-    plt.title(name_group)
+    plt.title("range of $\log_{10}q$: (-%s.%s, -%s.%s )"%(name_group[-2],name_group[-1],name_group[0],name_group[1]))
     plt.savefig("test_binary_distribution_bins_"+name_group+".png")
     plt.close()
 
@@ -362,25 +404,35 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     plt.colorbar()
     plt.xlabel("$\log_{10} \Delta \chi^2$(single fitting)")
     plt.ylabel("$m_0$")
-    plt.title(name_group)
+    plt.title("range of $\log_{10}q$: (-%s.%s, -%s.%s )"%(name_group[-2],name_group[-1],name_group[0],name_group[1]))
     plt.savefig("test_bb_distribution_bins_"+name_group+".png")
     plt.close()
 
     count_mat_binary = np.abs(count_mat_binary-0.5)+0.5
     rate_mat_binary = count_mat_binary_true/count_mat_binary
+    rate_mat_binary = (rate_mat_binary//0.25)/4
+    rate_mat_binary[-1][0] = 0
+    rate_mat_binary[0][-1] = 1
 
-    plt.figure()
-    plt.yticks(range(len(mag_binary)))
+    plt.figure(figsize=(12,12))
+    plt.yticks(range(len(mag_binary)),size=10)
     plt.gca().set_yticklabels(mag_binary)
-    plt.xticks(range(len(lgdchis_binary)))
-    plt.gca().set_xticklabels(lgdchis_binary)
+    plt.xticks(range(len(lgdchis_binary)),size=20)
+    chilabel = ["%.3f%%"%x for x in np.linspace(0,100*rate_testhistbins,len(lgdchis_binary))]
+    plt.gca().set_xticklabels(chilabel, rotation=45)
     plt.imshow(rate_mat_binary, cmap=plt.cm.hot_r)
-    plt.colorbar()
-    plt.xlabel("$\log_{10} \Delta \chi^2$(single fitting)")
-    plt.ylabel("$m_0$")
-    plt.title(name_group)
+    # plt.colorbar()
+    plt.xlabel("$\log_{10} \Delta \chi^2$(single fitting)",fontsize=25)
+    plt.ylabel("$m_0$",fontsize=25)
+    plt.title("range of $\log_{10}q$: (-%s.%s, -%s.%s )"%(name_group[-2],name_group[-1],name_group[0],name_group[1]))
     plt.savefig("test_binary_rate_bins_"+name_group+".png")
     plt.close()
+
+    line_posi = dm.getborder(rate_mat_binary)
+
+    data_hist = np.array([list(mag_binary), list(lgdchis_binary), list(rate_mat_binary), list(line_posi)],dtype=object)
+
+    np.save("data_hist_"+name_group+".npy",data_hist,allow_pickle=True)
 
     
 
@@ -535,6 +587,8 @@ def testnet(datadir=rootval,fullorparttest = fullorparttest):
     elif fullorparttest >= 1:
         return filename_list
 
+
+
 def training():
     # Loading datas
     trainingsdata = lcnet.Mydataset(n_lc=size_train,data_root=rootdir,judge_train=0)
@@ -607,7 +661,7 @@ def training():
         if (epoch+1)%5 == 0:
             torch.save(network.state_dict(),path_params+preload_Netmodel)
             print("netparams have been saved once")
-        if (epoch+1)%20 == 0:
+        if (epoch+1)%10 == 0:
             testnet(fullorparttest = fullorparttest)
             print("Examination have been executed once")
 

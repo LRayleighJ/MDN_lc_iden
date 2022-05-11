@@ -1,8 +1,8 @@
 #!/bin/bash
-#PBS -N net_iden_lc
-#PBS -lselect=1:ncpus=8:mem=16gb:ngpus=1
-#PBS -o /home/zerui603/MDN_lc/log/
-#PBS -e /home/zerui603/MDN_lc/log/
+#PBS -N resnet_kmt
+#PBS -lselect=1:ncpus=20:mem=64gb:ngpus=2
+#PBS -o /home/zerui603/MDN_lc_iden/log/
+#PBS -e /home/zerui603/MDN_lc_iden/log/
 cd $PBS_O_WORKDIR
 
 # >>> conda initialize >>>
@@ -19,8 +19,16 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
-conda activate PytorchCd11
-for i in {0..7};do                       
-    CUDA_VISIBLE_DEVICES=0 python /home/zerui603/MDN_lc_iden/iden_1D/test_realKMT.py $i                               
-done 
+conda activate PytorchCd11  
+
+# for i in {0..7};do                        
+CUDA_VISIBLE_DEVICES=3,4 python /home/zerui603/MDN_lc_iden/iden_1D/testmixnet.py # $i                         
+# done
+# python /home/zerui603/MDN_lc_iden/iden_1D/mixdataset.py
+# CUDA_VISIBLE_DEVICES=0,1 python /home/zerui603/MDN_lc_iden/unet/unet_kmt.py                         
+                                                               
 conda deactivate
+
+# for i in {0..7};do                        
+#     CUDA_VISIBLE_DEVICES=0,1,2,6 python /home/zerui603/MDN_lc_iden/iden_1D/drawhistline.py $i                         
+# done

@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt.py", line 792, in <module>
+    test_distribution(paramsid=50)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt.py", line 781, in test_distribution
+    plt.scatter(np.log10(dchis_label_list),rate_cover_list,label="TP/T",s=2,alpha=2)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2816, in scatter
+    None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/cbook/deprecation.py", line 358, in wrapper
+    return func(*args, **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 4429, in scatter
+    alpha=alpha
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/collections.py", line 912, in __init__
+    Collection.__init__(self, **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/collections.py", line 164, in __init__
+    self.update(kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/artist.py", line 1006, in update
+    ret = [_update_property(self, k, v) for k, v in props.items()]
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/artist.py", line 1006, in <listcomp>
+    ret = [_update_property(self, k, v) for k, v in props.items()]
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/artist.py", line 1003, in _update_property
+    return func(v)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/collections.py", line 774, in set_alpha
+    self._set_facecolor(self._original_facecolor)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/collections.py", line 702, in _set_facecolor
+    self._facecolors = mcolors.to_rgba_array(c, self._alpha)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/colors.py", line 307, in to_rgba_array
+    raise ValueError("RGBA values should be within 0-1 range")
+ValueError: RGBA values should be within 0-1 range

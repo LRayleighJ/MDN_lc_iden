@@ -1,0 +1,8 @@
+/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:770: RuntimeWarning: invalid value encountered in long_scalars
+  rate_cover_list.append(np.sum(predict_01_array*label)/np.sum(label))
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt.py", line 793, in <module>
+    test_distribution(paramsid=50)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt.py", line 771, in test_distribution
+    rate_wide_list.append(np.sum(predict_01_array*label)/np.sum(predicted))
+NameError: name 'predicted' is not defined

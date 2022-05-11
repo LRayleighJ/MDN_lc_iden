@@ -93,10 +93,10 @@ def default_loader(data_root,posi_lc,judge_train=0):
 
     return lc_data, label
 
-def default_loader_fortest(data_root,posi_lc,judge_train=0):
+def default_loader_fortest(data_root, posi_lc, extra_index=None):
     ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0, chi^2, label]
     ## [times, dtimes, lc_noi, sigma, lc_nonoi, args_minimize, lc_fit_minimize, chi_array]
-    datadir = list(np.load(data_root+str(posi_lc+1000000*judge_train)+".npy", allow_pickle=True))
+    datadir = list(np.load(data_root+str(posi_lc)+".npy", allow_pickle=True))
     
     labels = np.array(datadir[0],dtype=np.float64)
 
@@ -124,7 +124,15 @@ def default_loader_fortest(data_root,posi_lc,judge_train=0):
 
     lc_data = np.array([data_input])
 
-    return lc_data, labels
+    extra_data = []
+
+    if not extra_index:
+        pass
+    else:
+        for i in extra_index:
+            extra_data.append(datadir[i])
+
+    return lc_data, labels, extra_data
 
 
 class Mydataset(Dataset):

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt.py", line 794, in <module>
+    test_distribution(paramsid=50)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt.py", line 762, in test_distribution
+    dchis_label = np.abs(chis(lc_withnoi,lc_singlemodel,err,label)-chis(lc_withnoi,lc_withoutnoi,err,label))
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt.py", line 23, in chis
+    if not weight:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()

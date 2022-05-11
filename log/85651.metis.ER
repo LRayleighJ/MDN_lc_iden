@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/iden_1D/testmixnet.py", line 99, in <module>
+    testnet(name_group)
+  File "/home/zerui603/MDN_lc_iden/iden_1D/testmixnet.py", line 91, in testnet
+    bspre = np.append(bspre_batch)
+  File "<__array_function__ internals>", line 4, in append
+TypeError: _append_dispatcher() missing 1 required positional argument: 'values'

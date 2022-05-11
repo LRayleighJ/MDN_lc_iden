@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/iden_1D/testmixnet.py", line 143, in <module>
+    rate_line_0 = hist_lgdchis_pre0[hist_lgdchis_act0>0]/hist_lgdchis_act0[hist_lgdchis_act0>0]
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()

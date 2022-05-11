@@ -1,0 +1,10 @@
+/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:770: RuntimeWarning: invalid value encountered in long_scalars
+  rate_cover_list.append(np.sum(predict_01_array*label)/np.sum(label))
+/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:771: RuntimeWarning: invalid value encountered in long_scalars
+  rate_wide_list.append(np.sum(predict_01_array*label)/np.sum(predict_01_array))
+/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:775: RuntimeWarning: divide by zero encountered in log10
+  plt.scatter(np.log10(dchis_label_list),np.log10(dchis_predict_list),s=2,alpha=0.5)
+/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:782: RuntimeWarning: divide by zero encountered in log10
+  plt.scatter(np.log10(dchis_label_list),rate_cover_list,label="TP/T")
+/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:783: RuntimeWarning: divide by zero encountered in log10
+  plt.scatter(np.log10(dchis_label_list),rate_wide_list,label="TP/P")
