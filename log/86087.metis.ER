@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/iden_1D/testmixnet.py", line 354, in <module>
+    hist_data,hist_data_percent = testnet(name_group,network)
+  File "/home/zerui603/MDN_lc_iden/iden_1D/testmixnet.py", line 328, in testnet
+    hist_xaxis_percent[i] = lgbchi_s_act_sort[i*delta]
+IndexError: index 100 is out of bounds for axis 0 with size 100

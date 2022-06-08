@@ -1,0 +1,85 @@
+GPU: True
+80
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 512, 32])  5
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1000, 3])  input
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 1, 1000]) after rnn
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 64, 250]) after pre
+torch.Size([500, 512, 32])  5
+torch.Size([500, 512, 32])  5
+2593 1469 212 5726
+(24,) (24,) (24,)
+(28,) (28,) (28,)

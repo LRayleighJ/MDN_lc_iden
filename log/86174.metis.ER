@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/iden_1D/eyetest.py", line 60, in <module>
+    list_test = np.load("/home/zerui603/MDN_lc_iden/eyetest_index_"+name_group+"test.npy",allow_pickle=True)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/numpy/lib/npyio.py", line 428, in load
+    fid = open(os_fspath(file), "rb")
+FileNotFoundError: [Errno 2] No such file or directory: '/home/zerui603/MDN_lc_iden/eyetest_index_00to10testtest.npy'

@@ -132,6 +132,8 @@ def default_loader_fortest(data_root, posi_lc, extra_index=None):
         for i in extra_index:
             extra_data.append(datadir[i])
 
+    extra_data = np.array(extra_data)
+
     return lc_data, labels, extra_data
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -N Unet_kmt
-#PBS -lselect=1:ncpus=20:mem=128gb:ngpus=2
+#PBS -lselect=1:ncpus=20:mem=256gb:ngpus=2
 #PBS -o /home/zerui603/MDN_lc_iden/log/
 #PBS -e /home/zerui603/MDN_lc_iden/log/
 cd $PBS_O_WORKDIR
@@ -21,7 +21,7 @@ unset __conda_setup
 # <<< conda initialize <<<
 conda activate PytorchCd11  
 
-CUDA_VISIBLE_DEVICES=5,6 python /home/zerui603/MDN_lc_iden/unet/unet_kmt.py                         
+CUDA_VISIBLE_DEVICES=2,3 python /home/zerui603/MDN_lc_iden/unet/unet_kmt.py                        
                                
 conda deactivate
 

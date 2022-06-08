@@ -15,7 +15,7 @@ def gridcount2D(x_data,y_data,X,Y):
     for i in range(len(X)-1):
         x_bin.append((X[i+1]+X[i])/2)
     for j in range(len(Y)-1):
-        y_bin.append((Y[i+1]+Y[i])/2)
+        y_bin.append((Y[j+1]+Y[j])/2)
 
     x_data = np.array(x_data)
     y_data = np.array(y_data)

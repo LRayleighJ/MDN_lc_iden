@@ -23,14 +23,14 @@ lgq_max = lgq_list[np.int(sys.argv[1])]
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
 datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
 
-storedir_list = ["/scratch/zerui603/KMT_unet/high_ratio/training/","/scratch/zerui603/KMT_unet/high_ratio/val/"]
+storedir_list = ["/scratch/zerui603/KMT_unet/low_ratio/training/","/scratch/zerui603/KMT_unet/low_ratio/val/"]
 storedir = storedir_list[np.int(sys.argv[1])]
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
 
-singleorbinary = 0 # 0:single 1:binary, else: error
+singleorbinary = 1 # 0:single 1:binary, else: error
 
-num_echo = 1
+num_echo = 0
 num_batch = 100
 num_bthlc_list = [1000,100]
 num_bthlc = num_bthlc_list[np.int(sys.argv[1])]
@@ -49,7 +49,7 @@ def mklabel(x):
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
     rho = 10.**random.uniform(-4, -2) # log-flat between 1e-4 and 1e-2
-    q = 10.**random.uniform(-2, 0) # including both planetary & binary events
+    q = 10.**random.uniform(-4, -2) # including both planetary & binary events
     s = 10.**random.uniform(np.log10(0.3), np.log10(3))
     alpha = random.uniform(0, 360) # 0-360 degrees
     ## use Penny (2014) parameterization for small-q binaries ##
@@ -329,10 +329,24 @@ def gen_simu_data(index_batch):
                 
                 chi_s_model = chi_square(magnitude_tran(lc[500:500+1000],basis_m),lc_noi_fortest,sig_fortest)
 
-                delta_chi_s_fortest = chi_s_minimize_fortest-chi_s_model  
+                delta_chi_s_fortest = chi_s_minimize_fortest-chi_s_model
+
+
+                # make unet label
+                lc_nonoi_fortest = magnitude_tran(lc[500:500+1000],basis_m)
+
+                lc_single_fromphys = lc_fit_minimize_fortest# magnitude_tran(single.magnification(times_fortest),basis_m)
 
                 if singleorbinary == 1:
-                    if delta_chi_s_fortest < 10:
+                    diff_data = np.abs(lc_nonoi_fortest-lc_single_fromphys)
+                    unet_label = ((diff_data>(2*np.mean(diff_data)))&(diff_data >= 0.025)).astype(np.int)
+                else:
+                    unet_label = np.zeros(times_fortest.shape)  
+
+                dchis_binarycut = np.sum(((lc_noi_fortest-lc_fit_minimize_fortest)**2/(sig_fortest)**2-(lc_noi_fortest-lc_nonoi_fortest)**2/(sig_fortest)**2)*unet_label)
+
+                if singleorbinary == 1:
+                    if (delta_chi_s_fortest < 10)|(dchis_binarycut < 10):
                         #print("delta chi square fails once")
                         continue
                 break
@@ -366,7 +380,7 @@ def gen_simu_data(index_batch):
 
         if singleorbinary == 1:
             diff_data = np.abs(lc_nonoi_fortest-lc_single_fromphys)
-            unet_label = ((diff_data>(2*np.mean(diff_data)))&(diff_data >= 0.05)).astype(np.int)
+            unet_label = ((diff_data>(2*np.mean(diff_data)))&(diff_data >= 0.025)).astype(np.int)
         else:
             unet_label = np.zeros(times_fortest.shape)
 

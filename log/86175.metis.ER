@@ -1,0 +1,36 @@
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/pool.py", line 121, in worker
+    result = (True, func(*args, **kwds))
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/pool.py", line 44, in mapstar
+    return list(map(*args))
+  File "/home/zerui603/MDN_lc_iden/iden_1D/eyetest.py", line 49, in plotandmove
+    plt.savefig(path_store+name_group+"/fig/"+str(index)+".png")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 723, in savefig
+    res = fig.savefig(*args, **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/figure.py", line 2203, in savefig
+    self.canvas.print_figure(fname, **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/backend_bases.py", line 2105, in print_figure
+    **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/backends/backend_agg.py", line 535, in print_png
+    with cbook.open_file_cm(filename_or_obj, "wb") as fh:
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/contextlib.py", line 112, in __enter__
+    return next(self.gen)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/cbook/__init__.py", line 418, in open_file_cm
+    fh, opened = to_filehandle(path_or_file, mode, True, encoding)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/cbook/__init__.py", line 403, in to_filehandle
+    fh = open(fname, flag, encoding=encoding)
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/zerui603/eyetest/00to10test/fig/112.png'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/iden_1D/eyetest.py", line 68, in <module>
+    p.map(plotandmove,range(500))
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/pool.py", line 268, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/pool.py", line 657, in get
+    raise self._value
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/zerui603/eyetest/00to10test/fig/112.png'
