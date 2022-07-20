@@ -1,4 +1,0 @@
-/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:650: RuntimeWarning: divide by zero encountered in log10
-  plt.plot(threshold_list,np.log10(positive_list),label="predicted positive in binary events")
-/home/zerui603/MDN_lc_iden/unet/unet_kmt.py:652: RuntimeWarning: divide by zero encountered in log10
-  plt.plot(threshold_list,np.log10(positive_list2),label="predicted positive in single events")

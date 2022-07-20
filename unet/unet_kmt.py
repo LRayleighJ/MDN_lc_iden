@@ -16,8 +16,8 @@ import gc
 import multiprocessing as mp
 import sys
 import imageio
-import datamodule.dm as dm
 
+import datamodule.dm as dm
 import netmodule.unetforkmt as lcnet
 
 def chis(x1,x2,sig,weight=1):
@@ -30,7 +30,7 @@ def chis_array(x1,x2,sig,weight=1):
 
 # reload
 reload = 0
-preload_Netmodel = "GRU_unet_lowratio.pkl"
+preload_Netmodel = "GRU_unet.pkl"
 path_params = "/scratch/zerui603/netparams/"
 num_process = 16
 
@@ -71,8 +71,8 @@ momentum = 0.5
 
 ## path of trainingset and validationset
 
-rootdir = "/scratch/zerui603/KMT_unet/low_ratio/training/"
-rootval = "/scratch/zerui603/KMT_unet/low_ratio/val/"
+rootdir = "/scratch/zerui603/KMT_unet/high_ratio/training/"
+rootval = "/scratch/zerui603/KMT_unet/high_ratio/val/"
 
 # training
 
@@ -270,13 +270,13 @@ def test(paramsid):
                 mag_max_lim += 0.1*(mag_max_lim-mag_min_lim)
                 mag_min_lim -= 0.3*(mag_max_lim-mag_min_lim)
 
-                plt.figure(figsize=(10,6))
+                plt.figure(figsize=(10,5))
                 # plt.subplot(311)
                 plt.ylim(mag_min_lim,mag_max_lim)
                 plt.scatter(s_time,s_point,s=4,alpha=0.5,label = "predict no structure",c="blue")
-                plt.scatter(b_time,b_point,s=4,alpha=0.5,label = "predict with structure",c="red")
-                plt.plot(time,lc_withoutnoi,ls="--",label="binary model",c="green")
-                plt.plot(time,lc_singlemodel,ls="--",label="single model",c="orange")
+                plt.scatter(b_time,b_point,s=4,alpha=0.5,label = "predict with structure",c="tomato")
+                plt.plot(time,lc_withoutnoi,ls="--",label="binary model",c="green",alpha=0.3)
+                plt.plot(time,lc_singlemodel,ls="--",label="single model",c="red",alpha=0.3)
                 plt.xlabel("t",fontsize=16)
                 plt.ylabel("Mag",fontsize=16)
                 plt.legend()
@@ -284,13 +284,13 @@ def test(paramsid):
                 plt.savefig("/home/zerui603/MDN_lc_iden/unet/testfig/"+str(np.int(i+j*testsize_batch))+"pre.pdf")
                 plt.close()
                 
-                plt.figure(figsize=(10,6))
+                plt.figure(figsize=(10,5))
                 # plt.subplot(312)
                 plt.ylim(mag_min_lim,mag_max_lim)
                 plt.scatter(s_time_label,s_point_label,s=4,alpha=0.5,label = "label no structure",c="blue")
-                plt.scatter(b_time_label,b_point_label,s=4,alpha=0.5,label = "label with structure",c="red")
-                plt.plot(time,lc_withoutnoi,ls="--",label="binary model",c="green")
-                plt.plot(time,lc_singlemodel,ls="--",label="single model",c="orange")
+                plt.scatter(b_time_label,b_point_label,s=4,alpha=0.5,label = "label with structure",c="tomato")
+                plt.plot(time,lc_withoutnoi,ls="--",label="binary model",c="green",alpha=0.3)
+                plt.plot(time,lc_singlemodel,ls="--",label="single model",c="red",alpha=0.3)
                 plt.xlabel("t",fontsize=16)
                 plt.ylabel("Mag",fontsize=16)
                 plt.legend()
@@ -936,8 +936,8 @@ def test_distribution(paramsid,droppoint=0):
 if __name__=="__main__":
     # training(paramsid=0)
     # for i in range(1,9):
-    # test(paramsid=90)
-    teststatic2(paramsid=40)
+    test(paramsid=40)
+    # teststatic2(paramsid=40)
     # test_distribution(paramsid=90,droppoint=0)
     # teststatic2(paramsid=90)
     # testgif()

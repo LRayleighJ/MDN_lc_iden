@@ -1,0 +1,4 @@
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 217
+    plt.scatter(time[extra_noise_index],lc_withnoi[extra_noise_index],,s=4,alpha=0.5,label = "extra noise",c="black")
+                                                                      ^
+SyntaxError: invalid syntax

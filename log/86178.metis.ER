@@ -1,4 +1,0 @@
-  File "/home/zerui603/MDN_lc_iden/iden_1D/eyetest.py", line 62
-    print("SIZE: "range(len(list_test[0])))
-                      ^
-SyntaxError: invalid syntax

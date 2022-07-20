@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "/home/zerui603/MDN_lc_iden/unet/compare_unet_resnet.py", line 261, in <module>
-    test_distribution(paramsid=60,droppoint=0)
-  File "/home/zerui603/MDN_lc_iden/unet/compare_unet_resnet.py", line 195, in test_distribution
-    bspretest_list.append(binaryclassi_list[j*testsize+i])
-IndexError: index 10000 is out of bounds for axis 0 with size 10000

@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "/home/zerui603/MDN_lc_iden/iden_1D/testmixnet.py", line 447, in <module>
-    hist_axis_temp0 = hist_axis[hist_lgdchis_act_total>0]
-IndexError: boolean index did not match indexed array along dimension 0; dimension is 100 but corresponding boolean dimension is 99

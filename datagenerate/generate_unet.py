@@ -23,18 +23,26 @@ lgq_max = lgq_list[np.int(sys.argv[1])]
 datadir_time = "/scratch/zerui603/noisedata/timeseq/"
 datadir_noise = "/scratch/zerui603/noisedata/noisedata_hist/"
 
-storedir_list = ["/scratch/zerui603/KMT_unet/low_ratio/training/","/scratch/zerui603/KMT_unet/low_ratio/val/"]
+storedir_list = ["/scratch/zerui603/KMT_unet/extra_noise/training/","/scratch/zerui603/KMT_unet/extra_noise/val/"]
 storedir = storedir_list[np.int(sys.argv[1])]
 
 # number range: range(num_echo*num_batch*num_bthlc, (num_echo+1)*num_bthlc)
 
-singleorbinary = 1 # 0:single 1:binary, else: error
+singleorbinary = 0 # 0:single 1:binary, else: error
 
-num_echo = 0
+num_echo = 1-singleorbinary
 num_batch = 100
 num_bthlc_list = [1000,100]
 num_bthlc = num_bthlc_list[np.int(sys.argv[1])]
 num_process = 20
+
+# the length of data is half of num_point_lc_origin
+num_point_lc =500
+num_point_lc_origin = 2*num_point_lc
+
+extra_noise_ratio = 0.05
+extra_sigma_ratio = 3
+
 
 def mklabel_ori(x):
     if x > 1:
@@ -49,7 +57,7 @@ def mklabel(x):
 def generate_random_parameter_set(u0_max=1, max_iter=100):
     ''' generate a random set of parameters. '''
     rho = 10.**random.uniform(-4, -2) # log-flat between 1e-4 and 1e-2
-    q = 10.**random.uniform(-4, -2) # including both planetary & binary events
+    q = 10.**random.uniform(-3, -1) # including both planetary & binary events
     s = 10.**random.uniform(np.log10(0.3), np.log10(3))
     alpha = random.uniform(0, 360) # 0-360 degrees
     ## use Penny (2014) parameterization for small-q binaries ##
@@ -213,7 +221,7 @@ def chi2_for_minimize(args,time,mag,sigma):
 
 def gen_simu_data(index_batch):
     # print("Batch",index_batch,"has started")
-    c_time = TimeData(datadir=datadir_time,num_point=2000)
+    c_time = TimeData(datadir=datadir_time,num_point=num_point_lc_origin)
     noi_model = NoiseData(datadir=datadir_noise)
     counter_total = 0
     for index_slc in range(num_bthlc):
@@ -229,7 +237,7 @@ def gen_simu_data(index_batch):
             except:
                 del c_time
                 gc.collect()
-                c_time = TimeData(datadir=datadir_time,num_point=2000)
+                c_time = TimeData(datadir=datadir_time,num_point=num_point_lc_origin)
                 print("time failure once")
                 continue
 
@@ -239,7 +247,7 @@ def gen_simu_data(index_batch):
 
         # for test 
 
-        times_fortest = times[500:500+1000]
+        times_fortest = times[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)]
 
         t_0 = 0
         count_gen_args = 0
@@ -292,8 +300,8 @@ def gen_simu_data(index_batch):
                 lc_singlemodel_withoutnoi = magnitude_tran(lc_singlemodel,basis_m)
                 
 
-                lc_noi_fortest = lc_noi[500:500+1000]
-                sig_fortest = sig[500:500+1000]
+                lc_noi_fortest = lc_noi[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)]
+                sig_fortest = sig[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)]
 
                 # physical choose first
 
@@ -327,19 +335,22 @@ def gen_simu_data(index_batch):
                 lc_fit_minimize_fortest = mag_cal(times_fortest,*args_minimize_fortest)
                 chi_s_minimize_fortest = chi_square(lc_fit_minimize_fortest,lc_noi_fortest,sig_fortest)
                 
-                chi_s_model = chi_square(magnitude_tran(lc[500:500+1000],basis_m),lc_noi_fortest,sig_fortest)
+                chi_s_model = chi_square(magnitude_tran(lc[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)],basis_m),lc_noi_fortest,sig_fortest)
 
                 delta_chi_s_fortest = chi_s_minimize_fortest-chi_s_model
 
 
                 # make unet label
-                lc_nonoi_fortest = magnitude_tran(lc[500:500+1000],basis_m)
+                lc_nonoi_fortest = magnitude_tran(lc[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)],basis_m)
 
                 lc_single_fromphys = lc_fit_minimize_fortest# magnitude_tran(single.magnification(times_fortest),basis_m)
 
                 if singleorbinary == 1:
                     diff_data = np.abs(lc_nonoi_fortest-lc_single_fromphys)
-                    unet_label = ((diff_data>(2*np.mean(diff_data)))&(diff_data >= 0.025)).astype(np.int)
+                    unet_label = ((diff_data>(2*np.mean(diff_data)))&(diff_data >= 0.1)).astype(np.int)
+
+                    if np.sum(unet_label) < 10:
+                        continue
                 else:
                     unet_label = np.zeros(times_fortest.shape)  
 
@@ -374,7 +385,7 @@ def gen_simu_data(index_batch):
         args_data_test.append(singleorbinary)
 
         # make unet label
-        lc_nonoi_fortest = magnitude_tran(lc[500:500+1000],basis_m)
+        lc_nonoi_fortest = magnitude_tran(lc[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)],basis_m)
 
         lc_single_fromphys = lc_fit_minimize_fortest# magnitude_tran(single.magnification(times_fortest),basis_m)
 
@@ -383,8 +394,14 @@ def gen_simu_data(index_batch):
             unet_label = ((diff_data>(2*np.mean(diff_data)))&(diff_data >= 0.025)).astype(np.int)
         else:
             unet_label = np.zeros(times_fortest.shape)
+        
+        # add extra noise
 
-        data_array=np.array([args_data_test,list(args_minimize_fortest),list(times_fortest),list(d_times[500:500+1000]),list(lc_noi_fortest),list(sig_fortest),list(magnitude_tran(lc[500:500+1000],basis_m)),list(lc_single_fromphys),unet_label],dtype=object)
+        extra_noise_size = np.int(extra_noise_ratio*num_point_lc)
+        extra_noise_index = random.sample(range(num_point_lc),extra_noise_size)
+        extra_noise = extra_sigma_ratio*np.mean(sig_fortest)*np.random.randn(extra_noise_size)
+
+        data_array=np.array([args_data_test,list(args_minimize_fortest),list(times_fortest),list(d_times[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)]),list(lc_noi_fortest),list(sig_fortest),list(magnitude_tran(lc[np.int(num_point_lc_origin//4): np.int(num_point_lc_origin*3//4)],basis_m)),list(lc_single_fromphys),unet_label,extra_noise_index,extra_noise],dtype=object)
         np.save(storedir+str(index_batch*num_bthlc+index_slc)+".npy",data_array,allow_pickle=True)
         print("lc "+str(index_batch*num_bthlc+index_slc),datetime.datetime.now())
     

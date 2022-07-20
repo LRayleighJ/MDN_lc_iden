@@ -1,0 +1,39 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 261, in <module>
+    test_threshold(paramsid=30)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 251, in test_threshold
+    optimizer.zero_grad()
+NameError: name 'optimizer' is not defined
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 990, in _try_get_data
+    data = self._data_queue.get(timeout=timeout)
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/queues.py", line 113, in get
+    return _ForkingPickler.loads(res)
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/site-packages/torch/multiprocessing/reductions.py", line 289, in rebuild_storage_fd
+    fd = df.detach()
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/resource_sharer.py", line 58, in detach
+    return reduction.recv_handle(conn)
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/reduction.py", line 185, in recv_handle
+    return recvfds(s, 1)[0]
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/multiprocessing/reduction.py", line 153, in recvfds
+    msg, ancdata, flags, addr = sock.recvmsg(1, socket.CMSG_LEN(bytes_size))
+ConnectionResetError: [Errno 104] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "/home/zerui603/.local/lib/python3.7/site-packages/prefetch_generator/__init__.py", line 80, in run
+    for item in self.generator:
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 521, in __next__
+    data = self._next_data()
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 1186, in _next_data
+    idx, data = self._get_data()
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 1152, in _get_data
+    success, data = self._try_get_data()
+  File "/home/zerui603/.conda/envs/PytorchCd11/lib/python3.7/site-packages/torch/utils/data/dataloader.py", line 1003, in _try_get_data
+    raise RuntimeError('DataLoader worker (pid(s) {}) exited unexpectedly'.format(pids_str)) from e
+RuntimeError: DataLoader worker (pid(s) 377105, 377185, 377425, 377505, 377585, 377745, 377825, 377905, 378065) exited unexpectedly
+

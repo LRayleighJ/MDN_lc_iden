@@ -16,6 +16,7 @@ import pickle
 import gc 
 
 
+
 # dataloader
 
 def default_loader(data_root,posi_lc,num_skip):
@@ -75,6 +76,43 @@ def loader_fortest(data_root,posi_lc,num_skip):
     label = np.array([datadir[8],datadir[2],datadir[4],datadir[5],datadir[6],datadir[7]])
 
     return lc_data, label
+
+
+def sample_curve(time,mag,err,length_resample=1000):
+    if len(time) < length_resample:
+        raise RuntimeError("The length of lightcurve must be %d"%size_check)
+    new_order = random.sample(range(len(time)),length_resample)
+    new_order = np.sort(new_order)
+    return time[new_order],mag[new_order],err[new_order]
+
+
+def loader_transform(time,mag,err,size_check=1000):
+    ## argsdata: [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
+    ## args_singlefitting: [t_E,t_0,u_0,basis_m]
+    ## [args_data, arg_singlefitting, time, d_time, lc_withnoi, err, lc_withoutnoi, lc_singlemodel, unet_label]
+
+    if len(time) != size_check:
+        raise RuntimeError("The length of lightcurve must be %d"%size_check)
+
+    lc_mag = np.array(mag,dtype=np.float64)
+    lc_mag = (np.mean(lc_mag)-lc_mag)/np.std(lc_mag)
+    lc_mag = lc_mag.reshape((1000,1))
+    
+    lc_time = np.array(time,dtype=np.float64)
+    lc_time = (lc_time-np.mean(lc_time))/np.std(lc_time)
+    lc_time = lc_time.reshape((1000,1))
+
+
+    lc_sig = np.array(err,dtype=np.float64)
+    lc_sig = (lc_sig-np.mean(lc_sig))/np.std(lc_sig)
+    lc_sig = lc_sig.reshape((1000,1))
+    # lc_sig = (lc_sig-lc_mean)/np.std(lc_sig)
+
+    data_input = np.concatenate((lc_mag,lc_time,lc_sig),axis=1)
+
+    lc_data = np.array([data_input])
+
+    return lc_data
 
 class Mydataset(Dataset):
     def __init__(self,transform=None,target_transform=None,n_lc=None,data_root=None,num_skip=0,loader=default_loader):

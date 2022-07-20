@@ -158,12 +158,19 @@ def testnet(name_group="",network=None):
     lgdchis_pre0 = lgdchis_total[bspre_total<threshold]
     lgdchis_pre1 = lgdchis_total[bspre_total>=threshold]
 
+    lgdchis_pre00 = lgdchis_total[(bspre_total<threshold)&(label_total<0.5)]
+    lgdchis_pre10 = lgdchis_total[(bspre_total>=threshold)&(label_total<0.5)]
+    lgdchis_pre01 = lgdchis_total[(bspre_total<threshold)&(label_total>0.5)]
+    lgdchis_pre11 = lgdchis_total[(bspre_total>=threshold)&(label_total>0.5)]
+
     plt.figure(figsize=[7,6])
 
     plt.hist(lgdchis_act1,bins=80,range=(-1,7),label="actual: binary",histtype="step",ls="--",color="blue")
     plt.hist(lgdchis_act0,bins=80,range=(-1,7),label="actual: single",histtype="step",ls="--",color="red")
-    plt.hist(lgdchis_pre1,bins=80,range=(-1,7),label="predict: binary",histtype="step",color="blue")
-    plt.hist(lgdchis_pre0,bins=80,range=(-1,7),label="predict: single",histtype="step",color="red")
+    plt.hist(lgdchis_pre11,bins=80,range=(-1,7),label="pre: binary; act: binary",histtype="step")
+    plt.hist(lgdchis_pre01,bins=80,range=(-1,7),label="pre: single; act: binary",histtype="step")
+    plt.hist(lgdchis_pre10,bins=80,range=(-1,7),label="pre: binary; act: single",histtype="step")
+    plt.hist(lgdchis_pre00,bins=80,range=(-1,7),label="pre: single; act: single",histtype="step")
 
     plt.xlabel("$\log_{10} |\Delta \chi^2|$",fontsize=20)
     plt.tick_params(labelsize=15)

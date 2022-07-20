@@ -94,8 +94,8 @@ def getKMTdata(rootdir = "/scratch/zerui603/KMTrealdata/",year=2019,posi=1,cutra
     Fb = KMTflux(Ib_model)
 
 
-    # t0, tE, u0, m0, fb
-    KMT_official_args = np.array([t0_model,tE_model,u0_model,m0_model,1-Fs/Fb])
+    # tE, t0, u0, m0, fb
+    KMT_official_args = np.array([tE_model,t0_model,u0_model,m0_model,1-Fs/Fb])
 
     t_0_KMT = t0_model
     t_E_KMT = tE_model
@@ -131,7 +131,7 @@ def getKMTdata(rootdir = "/scratch/zerui603/KMTrealdata/",year=2019,posi=1,cutra
         time = time[time_select_index]
         mag = mag[time_select_index]
         errorbar = errorbar[time_select_index]
-        print(len(time))
+        # print(len(time))
         data_A_index = np.argwhere((data_A[4]<err_threshold)&(data_A[0]<t_0_KMT+cutratio[1]*t_E_KMT)&(data_A[0]>t_0_KMT+cutratio[0]*t_E_KMT)&(data_A[5]<FWHM_threshold)&(data_A[5]>0)&(data_A[6]<sky_threshold)).T[0]
         data_C_index = np.argwhere((data_C[4]<err_threshold)&(data_C[0]<t_0_KMT+cutratio[1]*t_E_KMT)&(data_C[0]>t_0_KMT+cutratio[0]*t_E_KMT)&(data_C[5]<FWHM_threshold)&(data_C[5]>0)&(data_C[6]<sky_threshold)).T[0]
         data_S_index = np.argwhere((data_S[4]<err_threshold)&(data_S[0]<t_0_KMT+cutratio[1]*t_E_KMT)&(data_S[0]>t_0_KMT+cutratio[0]*t_E_KMT)&(data_S[5]<FWHM_threshold)&(data_S[5]>0)&(data_S[6]<sky_threshold)).T[0]
@@ -154,7 +154,7 @@ def getKMTdata(rootdir = "/scratch/zerui603/KMTrealdata/",year=2019,posi=1,cutra
         time = time[time_select_index]
         mag = mag[time_select_index]
         errorbar = errorbar[time_select_index]
-        print(len(time))
+        # print(len(time))
         data_A_index = np.argwhere((data_A[4]<err_threshold)&((data_A[0]>t_0_KMT+cutratio[1]*t_E_KMT)|(data_A[0]<t_0_KMT+cutratio[0]*t_E_KMT))&(data_A[5]<FWHM_threshold)&(data_A[5]>0)&(data_A[6]<sky_threshold)).T[0]
         data_C_index = np.argwhere((data_C[4]<err_threshold)&((data_C[0]>t_0_KMT+cutratio[1]*t_E_KMT)|(data_C[0]<t_0_KMT+cutratio[0]*t_E_KMT))&(data_C[5]<FWHM_threshold)&(data_C[5]>0)&(data_C[6]<sky_threshold)).T[0]
         data_S_index = np.argwhere((data_S[4]<err_threshold)&((data_S[0]>t_0_KMT+cutratio[1]*t_E_KMT)|(data_S[0]<t_0_KMT+cutratio[0]*t_E_KMT))&(data_S[5]<FWHM_threshold)&(data_S[5]>0)&(data_S[6]<sky_threshold)).T[0]
@@ -173,8 +173,56 @@ def getKMTdata(rootdir = "/scratch/zerui603/KMTrealdata/",year=2019,posi=1,cutra
         return np.array(KMT_official_args),killnan(np.array([data_prereturn[0],data_prereturn[1],1/data_prereturn[2]])), killnan(dataA_sort), killnan(dataC_sort), killnan(dataS_sort),bound_cut
 
 # Function of fitting
+def magnitude_tran(A,m0,fb=0):
+    return m0 - 2.5*np.log10((1-fb)*A+fb)
+
+def mag_cal(t,tE,t0,u0,m0,fb=0):
+    u = np.sqrt(((t-t0)/tE)**2+u0**2)
+    A = (u**2+2)/(u*np.sqrt(u**2+4))
+    return magnitude_tran(A,m0,fb)
+
+def chi_square(single,binary,sigma):
+    return np.sum(np.power((single-binary)/sigma,2))
+
+def chi2_for_minimize(args,time,mag,sigma):
+    return chi_square(mag_cal(time,*args),mag,sigma)
+
+def doublefitting(time,mag,err,init_args):
+    # initial_guess = [tE,t0,u0,m0,fb]
+    tE,t0,u0,m0,fb = init_args
+    print(init_args)
+
+    mag_single_model_phy = mag_cal(time,*init_args)
+    diff_phymodel = np.abs(mag-mag_single_model_phy)
+    mean_diff_phymodel = np.mean(diff_phymodel)
+
+    choose_list = (diff_phymodel <= 1*mean_diff_phymodel)
+
+    print(len(choose_list))
+    print(np.sum(choose_list))
+
+    # Minimize using extend fitting
+    ## [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
+    result = op.minimize(chi2_for_minimize, x0=init_args,args=(time[choose_list],mag[choose_list],err[choose_list]), method='Nelder-Mead')    
+
+    # print("Fitting was successful? {:}".format(result.success))
+    # print("Function evaluations: {:}".format(result.nfev))
+    if isinstance(result.fun, np.ndarray):
+        if result.fun.ndim == 0:
+            result_fun = float(result.fun)
+        else:
+            result_fun = result.fun[0]
+    else:
+        result_fun = result.fun
+
+    minimize_args = result.x.tolist()
+
+    return minimize_args, mag_cal(time,*minimize_args)
 
 
+
+
+'''
 def mag_ori(A):
     return -2.5*np.log10(A)
 
@@ -222,3 +270,4 @@ def alignKMTdata(datas,datas_fit,init_args):
     order_align = np.argsort(time_align)
 
     return time_align[order_align], mag_align[order_align], err_align[order_align]
+'''

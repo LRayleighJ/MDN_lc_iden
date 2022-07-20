@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 232, in <module>
+    testfig(num_test=100,num_skip=0)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 197, in testfig
+    lc_data, lc_label, extra_noise_list = lcnet.loader_fortest(root_val,i,num_skip)
+NameError: name 'root_val' is not defined

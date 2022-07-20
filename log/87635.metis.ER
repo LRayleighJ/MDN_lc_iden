@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 257, in <module>
+    test_threshold(paramsid=30)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 236, in test_threshold
+    valdata = lcnet.Mydataset(n_lc=testsize,data_root=rootval,num_skip=10000,loader=lcnet.loader_fortest)
+NameError: name 'testsize' is not defined

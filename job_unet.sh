@@ -21,7 +21,7 @@ unset __conda_setup
 # <<< conda initialize <<<
 conda activate PytorchCd11  
 
-CUDA_VISIBLE_DEVICES=2,3 python /home/zerui603/MDN_lc_iden/unet/unet_kmt.py                        
+CUDA_VISIBLE_DEVICES=2,3 python /home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py                        
                                
 conda deactivate
 
