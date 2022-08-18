@@ -1,0 +1,182 @@
+/home/zerui603/MDN_lc_iden/unet/netmodule/unetforkmt_500.py:21: RuntimeWarning: overflow encountered in exp
+  return 1/(1+np.exp(-u))
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (250) and the error 27 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (49) and the error 167 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (242) and the error 104 do not match
+/home/zerui603/MDN_lc_iden/unet/datamodule/loaddata.py:177: RuntimeWarning: invalid value encountered in log10
+  return m0 - 2.5*np.log10((1-fb)*A+fb)
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (156) and the error 70 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (3) and the error 96 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 324, in testUnet_KMT2019
+    KMT_args,data_total,data_A,data_C,data_S,_ = loaddata.getKMTdata(posi=posi,cutratio=[-2*new_cutratio+new_correctratio,2*new_cutratio+new_correctratio],FWHM_threshold=50,sky_threshold=20000)
+  File "/home/zerui603/MDN_lc_iden/unet/datamodule/loaddata.py", line 130, in getKMTdata
+    bound_cut = [time_select_index[0],time_select_index[-1]]
+IndexError: index 0 is out of bounds for axis 0 with size 0
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (0) and the error 30 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 324, in testUnet_KMT2019
+    KMT_args,data_total,data_A,data_C,data_S,_ = loaddata.getKMTdata(posi=posi,cutratio=[-2*new_cutratio+new_correctratio,2*new_cutratio+new_correctratio],FWHM_threshold=50,sky_threshold=20000)
+  File "/home/zerui603/MDN_lc_iden/unet/datamodule/loaddata.py", line 130, in getKMTdata
+    bound_cut = [time_select_index[0],time_select_index[-1]]
+IndexError: index 0 is out of bounds for axis 0 with size 0
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (0) and the error 109 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (10) and the error 123 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (53) and the error 135 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (0) and the error 108 do not match
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 324, in testUnet_KMT2019
+    KMT_args,data_total,data_A,data_C,data_S,_ = loaddata.getKMTdata(posi=posi,cutratio=[-2*new_cutratio+new_correctratio,2*new_cutratio+new_correctratio],FWHM_threshold=50,sky_threshold=20000)
+  File "/home/zerui603/MDN_lc_iden/unet/datamodule/loaddata.py", line 130, in getKMTdata
+    bound_cut = [time_select_index[0],time_select_index[-1]]
+IndexError: index 0 is out of bounds for axis 0 with size 0
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 407, in <module>
+    testUnet_KMT2019(posi,network_res,network_ref,thres=0.999,thres_ref=0.998)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 364, in testUnet_KMT2019
+    plt.errorbar(time_rs[bspre_array_ref>thres_ref],mag_rs[bspre_array_ref>thres_ref],yerr=err_rs[bspre_array>thres_ref],fmt='o',capsize=2,elinewidth=1,ms=1,alpha=0.7,c="green", label="without residual")
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2529, in errorbar
+    **({"data": data} if data is not None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3376, in errorbar
+    lower, upper = extract_err(yerr, y)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 3320, in extract_err
+    f"The lengths of the data ({len(data)}) and the "
+ValueError: The lengths of the data (0) and the error 154 do not match

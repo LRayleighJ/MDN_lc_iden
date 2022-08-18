@@ -15,11 +15,12 @@ from prefetch_generator import BackgroundGenerator
 import pickle
 import gc 
 
-
-
 # dataloader
+def sigmoid_unettest(x,center = 0.999, scale=5):
+    u = (x-center)/(1-center)*scale
+    return 1/(1+np.exp(-u))
 
-def default_loader(data_root,posi_lc,num_skip):
+def default_loader(data_root,posi_lc,num_skip,residual=False):
     ## argsdata: [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
     ## args_singlefitting: [t_E,t_0,u_0,basis_m]
     ## [args_data, arg_singlefitting,time,d_time,lc_withnoi,err,lc_withoutnoi,lc_singlemodel,unet_label]
@@ -31,15 +32,19 @@ def default_loader(data_root,posi_lc,num_skip):
 
     lc_mag = np.array(datadir[4],dtype=np.float64)
     lc_mag[extra_noise_index] += extra_noise
+    lc_time = np.array(datadir[2],dtype=np.float64)
+    lc_sig = np.array(datadir[5],dtype=np.float64)
+
+    if residual:
+        lc_single = np.array(datadir[7],dtype=np.float64)
+        lc_mag = ((lc_single-lc_mag)/(lc_sig))**2
+
     lc_mag = (np.mean(lc_mag)-lc_mag)/np.std(lc_mag)
     lc_mag = lc_mag.reshape((500,1))
     
-    lc_time = np.array(datadir[2],dtype=np.float64)
     lc_time = (lc_time-np.mean(lc_time))/np.std(lc_time)
     lc_time = lc_time.reshape((500,1))
 
-
-    lc_sig = np.array(datadir[5],dtype=np.float64)
     lc_sig = (lc_sig-np.mean(lc_sig))/np.std(lc_sig)
     lc_sig = lc_sig.reshape((500,1))
     # lc_sig = (lc_sig-lc_mean)/np.std(lc_sig)
@@ -52,7 +57,7 @@ def default_loader(data_root,posi_lc,num_skip):
 
     return lc_data, label
 
-def loader_fortest(data_root,posi_lc,num_skip=0):
+def loader_fortest(data_root,posi_lc,num_skip=0,residual=False):
     ## argsdata: [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
     ## args_singlefitting: [t_E,t_0,u_0,basis_m]
     ## [args_data, arg_singlefitting, time, d_time, lc_withnoi, err, lc_withoutnoi, lc_singlemodel, unet_label]
@@ -63,16 +68,21 @@ def loader_fortest(data_root,posi_lc,num_skip=0):
     extra_noise = np.array(datadir[10],dtype=np.float64)
 
     lc_mag = np.array(datadir[4],dtype=np.float64)
+    lc_time = np.array(datadir[2],dtype=np.float64)
+    lc_sig = np.array(datadir[5],dtype=np.float64)
     lc_mag[extra_noise_index] += extra_noise
+    if residual:
+        lc_single = np.array(datadir[7],dtype=np.float64)
+        lc_mag = ((lc_single-lc_mag)/(lc_sig))**2
     lc_mag = (np.mean(lc_mag)-lc_mag)/np.std(lc_mag)
     lc_mag = lc_mag.reshape((500,1))
     
-    lc_time = np.array(datadir[2],dtype=np.float64)
+    
     lc_time = (lc_time-np.mean(lc_time))/np.std(lc_time)
     lc_time = lc_time.reshape((500,1))
 
 
-    lc_sig = np.array(datadir[5],dtype=np.float64)
+    
     lc_sig = (lc_sig-np.mean(lc_sig))/np.std(lc_sig)
     lc_sig = lc_sig.reshape((500,1))
     # lc_sig = (lc_sig-lc_mean)/np.std(lc_sig)
@@ -94,7 +104,7 @@ def sample_curve(time,mag,err,length_resample=1000):
     return time[new_order],mag[new_order],err[new_order]
 
 
-def loader_transform(time,mag,err,size_check=1000):
+def loader_transform(time,mag,err,size_check=500):
     ## argsdata: [u_0, rho, q, s, alpha, t_E, basis_m, t_0]
     ## args_singlefitting: [t_E,t_0,u_0,basis_m]
     ## [args_data, arg_singlefitting, time, d_time, lc_withnoi, err, lc_withoutnoi, lc_singlemodel, unet_label]
@@ -123,16 +133,17 @@ def loader_transform(time,mag,err,size_check=1000):
     return lc_data
 
 class Mydataset(Dataset):
-    def __init__(self,transform=None,target_transform=None,n_lc=None,data_root=None,num_skip=0,loader=default_loader):
+    def __init__(self,transform=None,target_transform=None,n_lc=None,data_root=None,num_skip=0,loader=default_loader,residual=False):
         self.n_lc = n_lc
         self.transform = transform
         self.target_transform = target_transform
         self.loader = loader
         self.data_root = data_root
         self.num_skip=num_skip
+        self.residual=residual
 
     def __getitem__(self, index):
-        lc, label = self.loader(self.data_root,index,self.num_skip)
+        lc, label = self.loader(self.data_root,index,self.num_skip,self.residual)
         if self.transform is not None:
             lc = self.transform(lc)
         return lc, label

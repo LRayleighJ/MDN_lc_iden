@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 268, in <module>
-    test_threshold(paramsid=30)
-  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 257, in test_threshold
-    for i in val_outputs.shape[0]:
-TypeError: 'int' object is not iterable
