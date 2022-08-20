@@ -257,7 +257,7 @@ def testfig(num_test,network,network_ref=None,thres=0.9999,thres_ref=0.9999,num_
             plt.ylim(mag_min_lim,mag_max_lim)
             plt.gca().invert_yaxis()
             
-            plt.savefig("/home/zerui603/MDN_lc_iden/unet/testfig/"+str(np.int(i))+"_residual.pdf")
+            plt.savefig("/home/zerui603/MDN_lc_iden/unet/testfig/"+str(np.int(i))+"_residual.png")
             plt.close()
 
 def test_threshold(paramsid=0,residual=False):
@@ -386,7 +386,7 @@ def testUnet_KMT2019(posi, network=None,network_ref=None, thres=0.999, thres_ref
     plt.gca().invert_yaxis()
     plt.title(r"$sigmoid(2.5*\frac{label-%.3f}{1-%.3f})$"%(thres_ref,thres_ref,))
     plt.colorbar()
-    plt.savefig("/home/zerui603/MDN_lc_iden/unet/realfig/planet/KMT-2019-%04d.png"%(posi,))
+    plt.savefig("/home/zerui603/MDN_lc_iden/unet/realfig/binary/KMT-2019-%04d.pdf"%(posi,))
     plt.close()
 
 def params_loader(paramsid,params_name):
@@ -407,9 +407,9 @@ if __name__=="__main__":
     network_res = params_loader(60,preload_name_res)
     network_ref = params_loader(80,preload_name_ref)
 
-    # testfig(num_test=100,network=network_res,network_ref=network_ref,thres=0.9999,thres_ref=0.9998,num_skip=1000)
+    testfig(num_test=100,network=network_res,network_ref=network_ref,thres=0.9999,thres_ref=0.9998,num_skip=1000)
 
-    KMT2019anomaly = np.loadtxt("/home/zerui603/MDN_lc_iden/unet/KMT2019anomaly_planet.txt").astype(np.int64)
+    KMT2019anomaly = np.loadtxt("/home/zerui603/MDN_lc_iden/unet/KMT2019anomaly.txt").astype(np.int64)
 
     for posi in KMT2019anomaly:
         try:
