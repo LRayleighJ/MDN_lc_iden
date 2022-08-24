@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 4231, in _parse_scatter_color_args
+    colors = mcolors.to_rgba_array(c)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/colors.py", line 340, in to_rgba_array
+    return np.array([to_rgba(cc, alpha) for cc in c])
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/colors.py", line 340, in <listcomp>
+    return np.array([to_rgba(cc, alpha) for cc in c])
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/colors.py", line 185, in to_rgba
+    rgba = _to_rgba_no_colorcycle(c, alpha)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/colors.py", line 268, in _to_rgba_no_colorcycle
+    raise ValueError(f"Invalid RGBA argument: {orig_c!r}")
+ValueError: Invalid RGBA argument: 0.5935747412075212
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 583, in <module>
+    scatter_comparer(num_test=10000, num_skip=0, network_res=network_res, network_ref=network_ref, thres_res=0.9, thres_ref=0.9, border=(1.0,7.5), scaled=False)
+  File "/home/zerui603/MDN_lc_iden/unet/unet_kmt_500.py", line 531, in scatter_comparer
+    plt.scatter(length_label_res, length_pre_res,s=2, c=map01(log10abs(dchis_res_label_total)), cmap=plt.cm.Greens)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/pyplot.py", line 2816, in scatter
+    None else {}), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/__init__.py", line 1565, in inner
+    return func(ax, *map(sanitize_sequence, args), **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/cbook/deprecation.py", line 358, in wrapper
+    return func(*args, **kwargs)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 4392, in scatter
+    get_next_color_func=self._get_patches_for_fill.get_next_color)
+  File "/home/zerui603/.local/lib/python3.7/site-packages/matplotlib-3.2.1-py3.7-linux-x86_64.egg/matplotlib/axes/_axes.py", line 4234, in _parse_scatter_color_args
+    raise invalid_shape_exception(c.size, xsize)
+ValueError: 'c' argument has 9065 elements, which is inconsistent with 'x' and 'y' with size 4538.

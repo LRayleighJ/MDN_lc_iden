@@ -28,6 +28,12 @@ def chis(x1,x2,sig,weight=1):
 def chis_array(x1,x2,sig,weight=1):
     return (np.array(x1)-np.array(x2))**2/np.array(sig)**2*weight
 
+def log10abs(x):
+    return np.log10(np.abs(x))
+
+def map01(x):
+    return (x-np.min(x))/(np.ptp(x))
+
         
 
 testsize=10000
@@ -379,7 +385,7 @@ def testUnet_KMT2019(posi, network=None,network_ref=None, thres=0.999, thres_ref
     plt.title(r"$sigmoid(2.5*\frac{label-%.3f}{1-%.3f})$"%(thres,thres,))
     plt.colorbar()
     plt.axes([0.1, 0.03, 0.9, 0.273])
-    plt.scatter(time_rs, mag_rs, s=10, c=bspre_sigmoid_ref, cmap=plt.cm.Greens, edgecolors='none')
+    plt.scatter(time_rs, mag_rs, s=10, c=bspre_sigmoid_ref, cmap=plt.cm.Reds, edgecolors='none')
     plt.plot(time_rs,mag_single_rs,ls="--")
     plt.xlabel("time/HJD")
     plt.ylabel("magnitude")
@@ -396,6 +402,189 @@ def params_loader(paramsid,params_name):
     network.load_state_dict(torch.load(path_params+params_name[:-4]+"_"+str(paramsid)+".pkl"))
     return network
     
+def get_dchis_executer(dataoris, labels, predicts, size, thres, scaled=False):
+    # dataori: [time, lc_withnoi, err, lc_withoutnoi, lc_singlemodel], (size, 5, length)
+    # label: (size, length)
+    # predict: (size, 2, length)
+    dchis_label_list = []
+    dchis_predict_list = []
+    length_label_list = []
+    length_predict_list = []
+    for i in range(size):
+        time, lc_withnoi, err, lc_withoutnoi, lc_singlemodel = dataoris[i]
+        label = labels[i]
+        predict = (predicts[i][1] > thres).astype(np.int)
+
+        dchis_label = lcnet.dchis_cal(lc_withnoi,lc_withoutnoi,lc_singlemodel,err,label)
+        dchis_predict = lcnet.dchis_cal(lc_withnoi,lc_withoutnoi,lc_singlemodel,err,predict)
+
+        dchis_label_list.append(dchis_label)
+        dchis_predict_list.append(dchis_predict)
+        length_label_list.append(np.sum(label))
+        length_predict_list.append(np.sum(predict))
+
+    dchis_label_list = np.array(dchis_label_list)
+    dchis_predict_list = np.array(dchis_predict_list)
+    length_label_list = np.array(length_label_list)
+    length_predict_list = np.array(length_predict_list)
+
+    dchis_label_list = dchis_label_list[length_predict_list>0]
+    dchis_predict_list = dchis_predict_list[length_predict_list>0]
+    length_label_list = length_label_list[length_predict_list>0]
+    length_predict_list = length_predict_list[length_predict_list>0]
+    
+    print(np.mean(length_predict_list))
+    print(np.sum(length_predict_list<=0))
+    print(np.mean(length_label_list))
+    print(np.sum(length_label_list<=0))
+
+    if scaled:
+        return dchis_predict_list/length_predict_list,dchis_label_list/length_label_list, length_predict_list, length_label_list
+    else:
+        return dchis_predict_list,dchis_label_list, length_predict_list, length_label_list
+
+
+
+    
+def scatter_comparer(num_test, num_skip, network_res, network_ref, thres_res, thres_ref, border=(0.5,7.5),scaled=False):
+    valdata_res = lcnet.Mydataset(n_lc=num_test,data_root=rootval,residual=True,loader=lcnet.loader_grouptest)
+    valset_res = lcnet.DataLoaderX(valdata_res, batch_size=num_test//2,shuffle=False,num_workers=num_process,pin_memory=True)
+    valdata_ref = lcnet.Mydataset(n_lc=num_test,data_root=rootval,residual=False,loader=lcnet.loader_grouptest)
+    valset_ref = lcnet.DataLoaderX(valdata_ref, batch_size=num_test//2,shuffle=False,num_workers=num_process,pin_memory=True)
+
+    dchis_res_predict_total = np.array([])
+    dchis_ref_predict_total = np.array([])
+
+    dchis_res_label_total = np.array([])
+    dchis_ref_label_total = np.array([])
+
+    length_res_predict_total = np.array([])
+    length_ref_predict_total = np.array([])
+
+    length_res_label_total = np.array([])
+    length_ref_label_total = np.array([])
+
+    with torch.no_grad():
+        for i, val_res in enumerate(valset_res):
+            val_inputs_res, val_labelanddata_res = val_res
+            val_labels_res = val_labelanddata_res[:,0,:].long()
+            val_dataori_res = val_labelanddata_res[:,1:,:].numpy()
+            val_inputs_res = val_inputs_res.float()
+            if use_gpu:
+                val_inputs_res = val_inputs_res.cuda()
+                val_labels_res = val_labels_res.cuda()
+            val_outputs_res = network_res(val_inputs_res).detach().cpu().numpy()
+            val_inputs_res = val_inputs_res.detach().cpu().numpy()
+            val_labels_res = val_labels_res.detach().cpu().numpy()
+
+            dchis_pre_res, dchis_label_res, length_pre_res, length_label_res = get_dchis_executer(dataoris=val_dataori_res, labels=val_labels_res, predicts=val_outputs_res, size=val_labels_res.shape[0], thres=thres_res, scaled=scaled)
+            print(dchis_pre_res.shape)
+            print(dchis_label_res.shape)
+            dchis_res_predict_total = np.append(dchis_res_predict_total,dchis_pre_res)
+            dchis_res_label_total = np.append(dchis_res_label_total,dchis_label_res)
+            length_res_predict_total = np.append(length_res_predict_total,length_pre_res)
+            length_res_label_total = np.append(length_res_label_total,length_label_res)
+
+        for i, val_ref in enumerate(valset_ref):
+            val_inputs_ref, val_labelanddata_ref = val_ref
+            val_labels_ref = val_labelanddata_ref[:,0,:].long()
+            val_dataori_ref = val_labelanddata_ref[:,1:,:].numpy()
+            val_inputs_ref = val_inputs_ref.float()
+            if use_gpu:
+                val_inputs_ref = val_inputs_ref.cuda()
+                val_labels_ref = val_labels_ref.cuda()
+            val_outputs_ref = network_ref(val_inputs_ref).detach().cpu().numpy()
+            val_inputs_ref = val_inputs_ref.detach().cpu().numpy()
+            val_labels_ref = val_labels_ref.detach().cpu().numpy()
+
+            dchis_pre_ref, dchis_label_ref, length_pre_ref, length_label_ref = get_dchis_executer(dataoris=val_dataori_ref, labels=val_labels_ref, predicts=val_outputs_ref, size=val_labels_ref.shape[0], thres=thres_ref, scaled=scaled)
+            print(dchis_pre_ref.shape)
+            print(dchis_label_ref.shape)
+            dchis_ref_predict_total = np.append(dchis_ref_predict_total,dchis_pre_ref)
+            dchis_ref_label_total = np.append(dchis_ref_label_total,dchis_label_ref)
+            length_ref_predict_total = np.append(length_ref_predict_total,length_pre_ref)
+            length_ref_label_total = np.append(length_ref_label_total,length_label_ref)
+    # xyaxis
+    x_label = "$\log_{10}|\Delta \chi^2|$(label)"
+    y_label = "$\log_{10}|\Delta \chi^2|$(predict)"
+    if scaled:
+        x_label = "Scaled " + x_label
+        y_label = "Scaled " + y_label
+    # border
+    line50up_res,line50down_res,linexaxis1_res = dm.get_rate_updown_line(0.5,log10abs(dchis_res_label_total),log10abs(dchis_res_predict_total),np.linspace(0,8,32))
+    line75up_res,line75down_res,linexaxis2_res = dm.get_rate_updown_line(0.75,log10abs(dchis_res_label_total),log10abs(dchis_res_predict_total),np.linspace(0,8,32))
+    line90up_res,line90down_res,linexaxis3_res = dm.get_rate_updown_line(0.9,log10abs(dchis_res_label_total),log10abs(dchis_res_predict_total),np.linspace(0,8,32))
+    
+    line50up_ref,line50down_ref,linexaxis1_ref = dm.get_rate_updown_line(0.5,log10abs(dchis_ref_label_total),log10abs(dchis_ref_predict_total),np.linspace(0,8,32))
+    line75up_ref,line75down_ref,linexaxis2_ref = dm.get_rate_updown_line(0.75,log10abs(dchis_ref_label_total),log10abs(dchis_ref_predict_total),np.linspace(0,8,32))
+    line90up_ref,line90down_ref,linexaxis3_ref = dm.get_rate_updown_line(0.9,log10abs(dchis_ref_label_total),log10abs(dchis_ref_predict_total),np.linspace(0,8,32))
+
+
+    plt.figure(figsize=(20,20))
+    plt.subplot(221)
+    plt.scatter(log10abs(dchis_res_label_total),log10abs(dchis_res_predict_total),s=2,c="blue",alpha=0.5)
+
+    plt.fill_between(linexaxis1_res,line50down_res,line50up_res, where=line50down_res<line50up_res, facecolor="orange",alpha=0.5,label="$<50\%$")
+    plt.fill_between(linexaxis2_res,line75down_res,line50down_res, where=line75down_res<line50down_res,facecolor="greenyellow", alpha=0.5)
+    plt.fill_between(linexaxis2_res,line50up_res,line75up_res, where=line50up_res<line75up_res, facecolor="greenyellow",alpha=0.5,label="$50\sim 75\%$")
+    plt.fill_between(linexaxis3_res,line90down_res,line75down_res, where=line90down_res<line75down_res, facecolor="tomato", alpha=0.5)
+    plt.fill_between(linexaxis3_res,line75up_res,line90up_res, where=line75up_res<line90up_res, facecolor="tomato", alpha=0.5,label="$75\sim 90\%$")
+    plt.plot(border, border,ls="--")
+    plt.legend()
+    plt.grid()
+    plt.axis("scaled")
+    plt.xlim(border)
+    plt.ylim(border)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title("Network with residual")
+
+    plt.subplot(222)
+    plt.scatter(length_res_label_total, length_res_predict_total,s=2, c="tomato", alpha=0.5)# c=map01(log10abs(dchis_res_label_total)), cmap=plt.cm.Reds)
+    plt.plot((0,130), (0,130),ls="--")
+    plt.xlabel("length (label)")
+    plt.ylabel("length (predict)")
+    plt.grid()
+    plt.axis("scaled")
+    plt.xlim((0,130))
+    plt.ylim((0,130))
+    plt.title("Length (with residual)")
+
+    plt.subplot(223)
+    plt.scatter(log10abs(dchis_ref_label_total),log10abs(dchis_ref_predict_total),s=2,c="blue",alpha=0.5)
+
+    plt.fill_between(linexaxis1_ref,line50down_ref,line50up_ref, where=line50down_ref<line50up_ref, facecolor="orange",alpha=0.5,label="$<50\%$")
+    plt.fill_between(linexaxis2_ref,line75down_ref,line50down_ref, where=line75down_ref<line50down_ref,facecolor="greenyellow", alpha=0.5)
+    plt.fill_between(linexaxis2_ref,line50up_ref,line75up_ref, where=line50up_ref<line75up_ref, facecolor="greenyellow",alpha=0.5,label="$50\sim 75\%$")
+    plt.fill_between(linexaxis3_ref,line90down_ref,line75down_ref, where=line90down_ref<line75down_ref, facecolor="tomato", alpha=0.5)
+    plt.fill_between(linexaxis3_ref,line75up_ref,line90up_ref, where=line75up_ref<line90up_ref, facecolor="tomato", alpha=0.5,label="$75\sim 90\%$")
+    plt.plot(border, border,ls="--")
+    plt.legend()
+    plt.grid()
+    plt.axis("scaled")
+    plt.xlim(border)
+    plt.ylim(border)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title("Network without residual")
+
+    plt.subplot(224)
+    plt.scatter(length_ref_label_total, length_ref_predict_total,s=2, c="tomato", alpha=0.5)# c=map01(log10abs(dchis_ref_label_total)), cmap=plt.cm.Reds)
+    plt.plot((0,130), (0,130),ls="--")
+    plt.xlabel("length(label)")
+    plt.ylabel("length(predict)")
+    plt.grid()
+    plt.axis("scaled")
+    plt.xlim((0,130))
+    plt.ylim((0,130))
+    plt.title("Length (without residual)")
+
+    path_store = "/home/zerui603/MDN_lc_iden/unet/dchis_resVSref.png"
+    if scaled:
+        path_store = "/home/zerui603/MDN_lc_iden/unet/dchis_resVSref_scaled.png"
+    
+    plt.savefig(path_store)
+
 
 
 if __name__=="__main__":
@@ -407,6 +596,11 @@ if __name__=="__main__":
     network_res = params_loader(60,preload_name_res)
     network_ref = params_loader(80,preload_name_ref)
 
+    scatter_comparer(num_test=10000, num_skip=0, network_res=network_res, network_ref=network_ref, thres_res=0.9, thres_ref=0.9, border=(1.0,7.5), scaled=False)
+    scatter_comparer(num_test=10000, num_skip=0, network_res=network_res, network_ref=network_ref, thres_res=0.9, thres_ref=0.9, border=(0.0,5.5), scaled=True)
+
+    '''
+
     testfig(num_test=100,network=network_res,network_ref=network_ref,thres=0.9999,thres_ref=0.9998,num_skip=1000)
 
     KMT2019anomaly = np.loadtxt("/home/zerui603/MDN_lc_iden/unet/KMT2019anomaly.txt").astype(np.int64)
@@ -417,4 +611,6 @@ if __name__=="__main__":
         except:
             print("ERROR event: ", posi)
             print(traceback.print_exc())
+
+    '''
             
